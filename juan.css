@@ -1,0 +1,616 @@
+@import url('https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+/* 
+    font-family: 'Quantico', sans-serif;
+    font-family: 'Quicksand', sans-serif;
+    */
+
+/* >-----------[ VARIABLES ]-----------< */
+:root {
+  /* Fonts */
+  --primary-font: 'Quicksand', sans-serif;
+  --secondary-font: 'Quantico', sans-serif;
+  --font-main-color: #4D4D4D;
+
+  /* Colors */
+  --navbar-color: #F0F0F0;
+  --background-color: #F5F5F5;
+  --delete-icon-color: #FF5151;
+  --utility-icon-color: #FC7878;
+
+  --project-color: #FFA800;
+  --new-project-color: #FECC6B;
+  --skill-color: #7DCBF6;
+  --new-skill-color: #AADBF6;
+  --activity-color: #8BF479;
+  --new-activity-color: #B0FFA4;
+  --completed-activity-color: #67B55A;
+  --team-color: #EE604C;
+  --team-2-color: #FF8473;
+  --user-color: #C159DB;
+  --new-user-color: #CB8CDB;
+  --user-li-color-1: #D387E5;
+  --user-li-color-2: #E5A4F5;
+  --grade-color: #F679BD;
+  --leaderboard-color: #798DF6;
+  --log-color: #F6F971;
+
+  /* Neutral Colors */
+  --gray: #D9D9D9;
+  --white: #FFFFFF;
+  --black: #000000;
+
+  /* Font Sizes */
+  --h1: 1.2rem;
+  --h2: 1.1rem;
+  --h3: 1rem;
+  --h4: 0.9rem;
+  --h5: 0.8rem;
+  --profile-picture: 1.6rem;
+
+}
+
+/* >-----------[ ANIMATIONS ]-----------< */
+
+@keyframes wipe-in-right {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+[transition-style="in:wipe:right"] {
+  animation: 3s cubic-bezier(.25, 1, .30, 1) wipe-in-right both;
+}
+
+/* >-----------[ DEFAULT ]-----------< */
+
+* {
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  text-decoration: none;
+  margin: 0px;
+  padding: 0px;
+  font-weight: 400;
+  color: var(--black);
+  font-family: var(--primary-font);
+}
+
+body {
+  margin: 0px;
+  padding: 0px;
+  background-color: var(--background-color);
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+h1 {
+  font-size: var(--h1);
+}
+
+h2 {
+  font-size: var(--h2);
+  width: 80%;
+  text-align: left;
+  padding: 8px;
+}
+
+section h2{
+  margin-top: 20px;
+}
+
+h3 {
+  font-size: var(--h3);
+  font-weight: 500;
+}
+
+hr {
+  width: 80%;
+  height: 2px;
+  border-radius: 0px 50px 50px 0px;
+}
+
+.fs30{
+  font-size: 30px;
+}
+
+.limited{
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.login{
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+  height: 40dvh;
+  background-color: var(--project-color);
+  transition: all 0.6s ease;
+}
+
+.login input{
+  width: 222px;
+  height: 51px;
+  text-align: center;
+  color: var(--font-main-color);
+  font-size: var(--h2);
+  border-radius: 11px;
+  background-color: var(--background-color);
+}
+
+.login input[type="submit"]{
+  background-color: var(--black);
+  color: var(--white);
+  border-radius: 11px;
+}
+
+.form{
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+}
+
+header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 73px;
+  background-color: var(--navbar-color);
+  box-shadow: 0 4px 46.9px -10px rgba(0, 0, 0, 0.25);
+  padding: 0px 17px;
+  position: fixed;
+  top: 0px;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--h3);
+}
+
+.logo span {
+  font-family: var(--secondary-font);
+  color: var(--project-color);
+  font-size: 1.3rem;
+}
+
+.logo span::before {
+  content: 'Nispera';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: var(--black);
+  font-family: var(--primary-font);
+  font-size: 0.8rem;
+}
+
+.actual_user {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: 6px;
+}
+
+.actual_user img {
+  width: 50px;
+  height: 50px;
+  border-radius: 59px;
+}
+
+section{
+  margin-top: 80px;
+}
+
+/* >-----------[ GENERIC ]-----------< */
+
+.hidden{ /* Quiza no se usa */
+  display: none;
+}
+
+.height-0, .height-0 *{
+  height: 0px !important;
+  transition: all 0.5s;
+  overflow: hidden;
+}
+
+.fit-content, .fit-content *{
+  height: fit-content;
+  transition: all 0.5s;
+  overflow: hidden;
+}
+
+.add{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  height: fit-content;
+}
+
+.tag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0px 10px 10px 0px;
+  width: 100%;
+  height: 55px;
+  padding-left: 30%;
+  padding-right: 12px;
+  transform: translateX(-30%);
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  margin-top: 16px;
+  margin-left: 10px;
+}
+
+.tag h3{
+  font-weight: 700;
+}
+
+.tag i {
+  font-size: 30px;
+  font-weight: 500;
+}
+
+.scroll_tag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0px 10px 10px 0px;
+  width: 100%;
+  height: 55px;
+  padding-left: 30%;
+  padding-right: 12px;
+  transform: translateX(-30%);
+  cursor: grab;
+  position: relative;
+  transition: all 0.6s ease;
+  user-select: none;
+  margin-top: 16px;
+  margin-left: 10px;
+}
+
+.scroll_tag i {
+  font-size: 30px;
+  font-weight: 500;
+}
+
+.save_button{
+  border-radius: 50px;
+  font-size: var(--h1);
+  padding: 5px 10px;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.6s ease;
+  cursor: pointer;
+}
+
+.save_button:hover{
+  filter: grayscale(60%);
+  transition: all 0.6s ease;
+}
+
+.edit-percent{
+  position: relative;
+  left: 0px;
+}
+
+.edit-percent-inner{
+  width: 70vw;
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row;
+  align-items: center;
+  position: absolute;
+  z-index: 1;
+  top: 15px;
+  left: 5px;
+  pointer-events: none;
+}
+
+.edit-percent img{
+  height: 24px;
+  width: 24px;
+}
+
+.edit-percent-inner div:first-child{
+  width: 82vw;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+  flex-direction: row;
+}
+
+.edit-percent-inner div:last-child{
+  width: 18vw;
+}
+
+#skill-percent {
+  width: 70vw;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  height: 55px;
+  color: var(--skill-color);
+  background-color: var(--gray);
+  outline: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  margin: 0; 
+  border-radius: 0px 16px 16px 0px;
+}
+
+#skill-percent:hover {
+  opacity: 1;
+}
+
+#skill-percent::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 55px;
+  width: 0px;
+  border-radius: 0px 10px 10px 0px;
+  background: var(--skill-color);
+  cursor: pointer;
+}
+
+#skill-percent::-moz-range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 55px;
+  width: 10px;
+  border-radius: 0px 10px 10px 0px;
+  background: var(--skill-color);
+  cursor: pointer;
+}
+
+#skill-range{
+  width: 80vw;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  border-radius: 100px;
+  color: var(--skill-color);
+  background-color: var(--gray);
+}
+
+#skill-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 30px;
+  width: 30px;
+  border-radius: 100px;
+  background: var(--skill-color);
+  cursor: pointer;
+}
+
+#skill-range::-moz-range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 30px;
+  width: 30px;
+  border-radius: 100px;
+  background: var(--skill-color);
+  cursor: pointer;
+}
+
+
+/* >-----------[ TABLES ]-----------< */
+.generic-table{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 42px;
+  padding: 0px 10px;
+  gap: 10px;
+  transition: all 0.5s ease;
+}
+
+.generic-table img{
+  width: var(--profile-picture);
+  height: var(--profile-picture);
+  border-radius: 100px;
+}
+
+.generic-table p{
+  width: 71vw;
+  font-size: var(--h2);
+}
+
+.generic-table i{
+  width: auto;
+  margin-right: 6vw;
+  font-size: 30px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.generic-table div:first-child{
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 1vw;
+}
+
+.user-options{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-options div{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-options div:first-child{
+  align-items: start;
+  width: 60vw;
+}
+
+.user-options div:first-child p{
+  font-weight: 600;
+  font-size: var(--h3);
+}
+
+.user-options div:first-child span{
+  font-weight: 200;
+  margin-left: 2px;
+  font-size: var(--h4);
+}
+
+.user-options div:last-child{
+  align-items: center;
+  cursor: pointer;
+  width: 40vw;
+}
+
+.user-options div:last-child p{
+  color: var(--utility-icon-color);
+  font-size: var(--h5);
+  text-decoration: underline;
+}
+
+.user-options div:last-child i{
+  color: var(--utility-icon-color);
+  font-size: 30px;
+}
+
+.teams-table{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 63px;
+  padding: 0px 10px;
+  transition: all 0.5s ease;
+}
+
+.teams-table p:first-of-type{
+  width: 80vw;
+  font-size: var(--h2);
+}
+
+.teams-table p:last-of-type{
+  width: 10vw;
+  font-size: var(--h2);
+}
+
+.teams-table i{
+  width: auto;
+  margin-right: 6vw;
+  font-size: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+
+.evaluate-table{
+  transition: all 0.5s ease;
+}
+
+.add-people-table{
+  transition: all 0.5s ease;
+}
+    /* >-----------[ STUDENTS ]-----------< */
+
+    .your-team-table{
+      transition: all 0.5s ease;
+    }
+
+/* >-----------[ TAG COLORS ]-----------< */
+
+.generic{
+  background-color: var(--gray);
+}
+
+.project {
+  background-color: var(--project-color);
+}
+
+.nproject {
+  background-color: var(--new-project-color);
+}
+
+.skill {
+  background-color: var(--skill-color);
+}
+
+.nskill {
+  background-color: var(--new-skill-color);
+}
+
+.activity {
+  background-color: var(--activity-color);
+}
+
+.nactivity {
+  background-color: var(--new-activity-color);
+}
+
+.cactivity {
+  background-color: var(--completed-activity-color);
+}
+
+.team {
+  background-color: var(--team-color);
+}
+
+.team-2 {
+  background-color: var(--team-2-color);
+}
+
+.user {
+  background-color: var(--user-color);
+}
+
+.nuser {
+  background-color: var(--new-user-color);
+}
+
+.user-li-1 {
+  background-color: var(--user-li-color-1);
+}
+
+.user-li-2 {
+  background-color: var(--user-li-color-2);
+}
+
+.grade {
+  background-color: var(--grade-color);
+}
+
+.leaderboard {
+  background-color: var(--leaderboard-color);
+}
+
+.log {
+  background-color: var(--log-color);
+}
+
+.white{
+  background-color: var(--white);
+}
