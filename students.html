@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="juan.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo"><span>Education</span></div>
+      <div class="actual_user">
+        <p id="fullname">Nicolas Kuznetzov</p>
+        <img
+          src="assets/profilepic.png"
+          alt="user_portrait"
+          id="portrait"
+          onclick="editProfile()"
+        />
+      </div>
+    </header>
+    <div class="edit-profile height-0" id="edit-profile">
+      <div class="nav">
+        <i class='bx bx-undo' onclick="editProfile()"></i>
+        <div id="nav-extra"><button onclick="logOut()">Log Out</button></div>
+      </div>
+      <div><input type="file" id="portrait" onchange="updateImgPreview(this)"><label for="portrait" ></label></div>
+      <div><p id="user-name">Name</p></div>
+      <div><p id="user-surname">Surname Surname</p></div>
+      <div><i class='bx bxs-envelope' ></i><p id="user-email">example@example.com</p></div>
+      <div><i class='bx bxs-user' ></i><p id="user-username">nasusu</p></div>
+      <h3>Change Password</h3>
+      <hr class="user">
+      <div><i class='bx bxs-lock' ></i><input type="password" id="user-current-password" placeholder="Introduce your current password"></div>
+      <div><i class='bx bxs-key' ></i><input type="password" id="user-new-password" placeholder="Introduce your new password"></div>
+      <div class="save_button_container">
+        <button class="user save_button"><i class='bx bxs-save'></i>Save</button>
+        </div>
+    </div>
+    <script>
+      function editProfile() {
+    let profileDiv = document.getElementById("edit-profile");
+    let hrElement = profileDiv.querySelector("hr.user");
+
+    if (profileDiv.classList.contains("height-0")) {
+      hrElement.style.display = "block";
+      profileDiv.classList.remove("height-0");
+    } else {
+      profileDiv.classList.add("height-0");
+      hrElement.style.display = "none";
+    }
+    }
+
+    
+    function updateImgPreview(input) {
+let label = input.nextElementSibling;
+
+if (input.files && input.files[0]) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    label.style.backgroundImage = `url('${e.target.result}')`;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+}
+    </script>
+    <section id="main">
+      
+
+      <div class="nav">
+        <i class="bx bx-undo"></i>
+        <div id="nav-extra"></div>
+        <!-- EDIT PROJECT <i class='bx bxs-edit-alt'></i><p>Edit <span id="nav-extra-type">Project</span></p> -->
+        <!-- SAVE PROJECT <i class='bx bxs-save' ></i><p>Save <span id="nav-extra-type">Project</span></p> -->
+      </div>
+
+      <h2>Active Projects</h2>
+      <hr class="project" />
+
+      <div class="tag nproject" onclick="">
+        <h3>New Project</h3>
+        <i class="bx bx-plus"></i>
+      </div>
+
+      <div
+        class="scroll_tag project"
+        onclick="handleClick(this)"
+        onmousedown="handleStart(this)"
+        ontouchstart="handleStart(this)"
+      >
+        <h3>Project 04</h3>
+        <i class="bx bx-chevrons-right"></i>
+      </div>
+
+      <div
+        class="scroll_tag project"
+        onclick="handleClick(this)"
+        onmousedown="handleStart(this)"
+        ontouchstart="handleStart(this)"
+      >
+        <h3>Project 03</h3>
+        <i class="bx bx-chevrons-right"></i>
+      </div>
+
+      <div
+        class="scroll_tag project"
+        onclick="handleClick(this)"
+        onmousedown="handleStart(this)"
+        ontouchstart="handleStart(this)"
+      >
+        <h3>Project 02</h3>
+        <i class="bx bx-chevrons-right"></i>
+      </div>
+
+      <div
+        class="scroll_tag project"
+        onclick="handleClick(this)"
+        onmousedown="handleStart(this)"
+        ontouchstart="handleStart(this)"
+      >
+        <h3>Project 01</h3>
+        <i class="bx bx-chevrons-right"></i>
+      </div>
+
+      <h2>Users Management</h2>
+      <hr class="user" />
+
+      <div
+        class="scroll_tag user"
+        onclick="handleClick(this)"
+        onmousedown="handleStart(this)"
+        ontouchstart="handleStart(this)"
+      >
+        <h3>Import CSV</h3>
+        <i class="bx bx-chevrons-right"></i>
+      </div>
+
+      <div
+        class="scroll_tag user"
+        onclick="handleClick(this)"
+        onmousedown="handleStart(this)"
+        ontouchstart="handleStart(this)"
+      >
+        <h3>All Users</h3>
+        <i class="bx bx-chevrons-right"></i>
+      </div>
+
+      <div
+        class="scroll_tag log"
+        onclick="handleClick(this)"
+        onmousedown="handleStart(this)"
+        ontouchstart="handleStart(this)"
+      >
+        <h3>Logs</h3>
+        <i class="bx bx-chevrons-right"></i>
+      </div>
+
+      <h1>Project XX</h1>
+
+      <div
+        class="scroll_tag skill"
+        onclick="handleClick(this)"
+        onmousedown="handleStart(this)"
+        ontouchstart="handleStart(this)"
+      >
+        <h3>Skills</h3>
+        <i class="bx bx-chevrons-right"></i>
+      </div>
+
+      <div class="tag team">
+        <h3>Add People</h3>
+        <i class="bx bx-plus"></i>
+      </div>
+
+      <h2>Activities</h2>
+      <hr class="activity" />
+    </section>
+
+    <script>
+      /* >-----------[ SLIDERS ]-----------< */
+      const screenWidth =
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.body.clientWidth;
+      const porcentajeEnPixeles = (30 / 100) * screenWidth;
+      let isDragging = false;
+      let draggedElement = null;
+      var firstx = false;
+      const scroll_tag = document.querySelectorAll(".scroll_tag");
+
+      function handleStart(element) {
+        if (element.classList.contains("scroll_tag")) {
+          isDragging = true;
+          draggedElement = element;
+        }
+      }
+
+      document.addEventListener("mouseup", handleEnd);
+      document.addEventListener("touchend", handleEnd);
+      document.addEventListener("mousemove", handleMove);
+      document.addEventListener("touchmove", handleMove);
+
+      function handleEnd() {
+        draggedElement.style.transition = "all 0.6s ease";
+        isDragging = false;
+        draggedElement = null;
+        firstx = false;
+        scroll_tag.forEach((element) => {
+          element.style.transform = "translateX(-30%)";
+        });
+      }
+
+      function handleMove(event) {
+        if (isDragging && draggedElement) {
+          let x;
+          draggedElement.style.transition = "all 0s ease";
+
+          if (event.type === "mousemove") {
+            x = event.clientX;
+          } else if (event.type === "touchmove") {
+            // event.preventDefault(); // Prevent scrolling
+            const touches = event.touches;
+            if (touches.length > 0) {
+              const touch = touches[0];
+              x = touch.clientX || touch.pageX;
+            }
+          }
+
+          if (x !== undefined) {
+            if (!firstx) {
+              firstx = x;
+            }
+            if (x > firstx) {
+              const translateXValue = x - firstx;
+              if (translateXValue > porcentajeEnPixeles - 30) {
+                setTimeout(() => {
+                  //document.body.setAttribute("transition-style", "in:wipe:right");
+                }, 400);
+                //document.body.removeAttribute("transition-style", "in:wipe:right");
+              } else {
+                draggedElement.style.transform =
+                  "translateX(calc(" + translateXValue + "px - 30%))";
+              }
+            }
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

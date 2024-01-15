@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="juan.css" />
+  </head>
+  <body>
+    
+    <header>
+      <div class="logo"><span>Education</span></div>
+      <div class="actual_user">
+        <p id="fullname">Nicolas Kuznetzov</p>
+        <img
+          src="assets/profilepic.png"
+          alt="user_portrait"
+          id="portrait"
+          onclick="editProfile()"
+        />
+      </div>
+    </header>
+    <div class="edit-profile height-0" id="edit-profile">
+      <div class="nav">
+        <i class='bx bx-undo' onclick="editProfile()"></i>
+        <div id="nav-extra"><button onclick="logOut()">Log Out</button></div>
+      </div>
+      <div><input type="file" id="portrait" onchange="updateImgPreview(this)"><label for="portrait" ></label></div>
+      <div><p id="user-name">Name</p></div>
+      <div><p id="user-surname">Surname Surname</p></div>
+      <div><i class='bx bxs-envelope' ></i><p id="user-email">example@example.com</p></div>
+      <div><i class='bx bxs-user' ></i><p id="user-username">nasusu</p></div>
+      <h3>Change Password</h3>
+      <hr class="user">
+      <div><i class='bx bxs-lock' ></i><input type="password" id="user-current-password" placeholder="Introduce your current password"></div>
+      <div><i class='bx bxs-key' ></i><input type="password" id="user-new-password" placeholder="Introduce your new password"></div>
+      <div class="save_button_container">
+        <button class="user save_button"><i class='bx bxs-save'></i>Save</button>
+        </div>
+    </div>
+    <script>
+      function editProfile() {
+    let profileDiv = document.getElementById("edit-profile");
+    let hrElement = profileDiv.querySelector("hr.user");
+
+    if (profileDiv.classList.contains("height-0")) {
+      hrElement.style.display = "block";
+      profileDiv.classList.remove("height-0");
+    } else {
+      profileDiv.classList.add("height-0");
+      hrElement.style.display = "none";
+    }
+    }
+
+    
+    function updateImgPreview(input) {
+let label = input.nextElementSibling;
+
+if (input.files && input.files[0]) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    label.style.backgroundImage = `url('${e.target.result}')`;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+}
+    </script>
+    <section id="main">
+      
+
+
+      <!-- NAV -->
+      <div class="nav">
+        <i class='bx bx-undo'></i>
+        <div id="nav-extra"></div>
+        <!-- EDIT PROJECT <i class='bx bxs-edit-alt'></i><p>Edit <span id="nav-extra-type">Project</span></p> -->
+        <!-- SAVE PROJECT <i class='bx bxs-save' ></i><p>Save <span id="nav-extra-type">Project</span></p> -->
+      </div>
+
+      <h2>Skills</h2>
+      <hr class="skill">
+
+      <div class="edit-percent">
+        <input type="range" class="skill-percent" min="0" max="100" value="0">
+        <div class="edit-percent-inner">
+          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p class="percentage-display">0%</p></div>
+        </div>
+      </div>
+      <div class="edit-percent">
+        <input type="range" class="skill-percent" min="0" max="100" value="0">
+        <div class="edit-percent-inner">
+          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p class="percentage-display">0%</p></div>
+        </div>
+      </div>
+      <div class="edit-percent">
+        <input type="range" class="skill-percent" min="0" max="100" value="0">
+        <div class="edit-percent-inner">
+          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p class="percentage-display">0%</p></div>
+        </div>
+      </div>
+      <div class="edit-percent">
+        <input type="range" class="skill-percent" min="0" max="100" value="0">
+        <div class="edit-percent-inner">
+          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p class="percentage-display">0%</p></div>
+        </div>
+      </div>
+
+      <div class="with-filter">
+        <h2>Active Students</h2><i class='bx bxs-filter-alt bx-flip-horizontal' ></i>
+      </div>
+      <hr class="user">
+
+      <!-- GROUP TAGS -->
+      <div class="group-tags-container">
+        <div>
+        <div id="group-tags-suggestions">
+          
+        </div>
+        <input type="text" id="searchGroup" placeholder="Search for a group..." oninput="updateSuggestions(this.value)">
+        <i class='bx bxs-trash' onclick="clearInput(document.getElementById('searchGroup'))"></i>
+      </div>
+        <div id="group-tags">
+
+        </div>
+      </div>
+      <script>
+        function clearInput(input) {
+    input.value = ''; // Quiza no es necesaria una funcion
+    updateSuggestions('');
+  }
+
+  var suggestions = ['1r DAW', '2n DAW', '1r ASIX', '2n ASIX', 'DAM', 'DAM 2.0', 'ADE 2', 'ADE', '3r ASIX', '3r DAW'];
+  var choosenSuggestions = "";
+
+  // Actualiza la lista de sugeridos en base a las variables suggestions y choosenSuggestions
+  function updateSuggestions(inputText) {
+    let suggestionsContainer = document.getElementById('group-tags-suggestions');
+    if(inputText == '') {
+      suggestionsContainer.innerHTML = '';
+    } else {
+      inputText = inputText.trim();
+    suggestions.sort();     
+    suggestionsContainer.innerHTML = '';
+    suggestions.forEach(function (suggestion) {
+      if (suggestion.toLowerCase().includes(inputText.toLowerCase())) {
+        let suggestionElement = document.createElement('p');
+        suggestionElement.className = 'suggestion';
+
+        suggestionElement.textContent = suggestion;
+        suggestionElement.onclick = function () {
+          addTag(suggestion);
+          clearInput(document.querySelector('input[type="text"]'));
+        };
+        suggestionsContainer.appendChild(suggestionElement);
+      }
+    });
+    }
+  }
+
+  // Añade el grupo a los seleccionados y lo quita de los sugeridos
+  function addTag(tag) {
+    choosenSuggestions += tag + ';;';
+    let tagContainer = document.getElementById('group-tags');
+    let newTag = document.createElement('div');
+    newTag.className = 'team';
+    newTag.onclick = function () {
+      removeTag(this);
+    };
+    newTag.innerHTML = '<p>' + tag + '</p><i class="bx bx-x"></i>';
+    tagContainer.appendChild(newTag);
+    suggestions.splice(suggestions.indexOf(tag), 1);
+    updateSuggestions('');
+  }
+
+  // Elimina el grupo de los seleccionados y lo añade a los sugeridos
+  function removeTag(tag) {
+    let tagContainer = document.getElementById('group-tags');
+    let removedTag = tag.querySelector('p').textContent;
+    suggestions.push(removedTag);
+    choosenSuggestions = choosenSuggestions.split(";;").filter(function(item) {
+        return item.trim() !== removedTag.trim();
+    }).join(";;");
+    tagContainer.removeChild(tag);
+    updateSuggestions('');
+}
+
+      </script>
+
+
+
+      <div class="add-people-table user-li"> 
+        <div>
+          <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+          <p>Name Surname</p>
+        </div>
+        <div>
+          <input type="checkbox" id="userId">
+        </div>
+      </div>
+      <div class="add-people-table user-li"> 
+        <div>
+          <img src="assets/profilepic.png" alt="">
+          <p>Name Surname</p>
+        </div>
+        <div>
+          <input type="checkbox" id="userId">
+        </div>
+      </div>
+      <div class="add-people-table user-li"> 
+        <div>
+          <img src="assets/profilepic.png" alt="">
+          <p>Name Surname</p>
+        </div>
+        <div>
+          <input type="checkbox" id="userId">
+        </div>
+      </div>
+      <div class="add-people-table user-li"> 
+        <div>
+          <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+          <p>Name Surname</p>
+        </div>
+        <div>
+          <input type="checkbox" id="userId">
+        </div>
+      </div>
+      
+
+      <script>
+        let skillPercentInputs = document.querySelectorAll('.skill-percent');
+      
+        function limitMaxValue(input) {
+          var maxValue = 100;
+      
+          input.addEventListener('input', function() {
+            if (this.value > maxValue) {
+              this.value = maxValue;
+            }
+      
+            let totalPercentage = Array.from(skillPercentInputs).reduce((sum, input) => sum + parseInt(input.value), 0);
+      
+            if (totalPercentage > 100) {
+              this.value = this.value - (totalPercentage - 100);
+            }
+          });
+        }
+      
+        function paintPercentage(input) {
+      let parentDiv = input.closest('.edit-percent');
+      let percentageDisplay = parentDiv.querySelector('.percentage-display');
+  
+      input.addEventListener('input', function() {
+        percentageDisplay.textContent = input.value + '%';
+        let fillPercentage = (input.value / 100) * 100;
+        input.style.background = `linear-gradient(to right, var(--skill-color) 0%, var(--skill-color) ${fillPercentage}%, #ddd ${fillPercentage}%, #ddd 100%)`;
+      });
+    }
+      
+        
+        function paintOnLoading(input) {
+      let parentDiv = input.closest('.edit-percent');
+      let percentageDisplay = parentDiv.querySelector('.percentage-display');
+      percentageDisplay.textContent = input.value + '%';
+      let fillPercentage = (input.value / 100) * 100;
+      input.style.background = `linear-gradient(to right, var(--skill-color) 0%, var(--skill-color) ${fillPercentage}%, #ddd ${fillPercentage}%, #ddd 100%)`;
+    }
+  
+    document.addEventListener('DOMContentLoaded', function() {
+      skillPercentInputs.forEach(function(input) {
+        limitMaxValue(input);
+        paintPercentage(input);
+        paintOnLoading(input);
+      });
+    });
+      </script>
+
+      
+      <!-- NEW / EDITAR SKILL ---------------------------------------------------------------------------------
+      <div class="skill-icon">
+        <div class="icon-background" onclick="changeIcon('show')"><img src="assets/skills/color/Logic.svg" alt="skill-choose-icon"></div>
+        <input type="text" placeholder="Skill Name" id="skill-name" value="Skill Name">
+      </div>
+      <div class="choose-icon" id="choose-icon">
+        <div><p>Choose an icon</p><i class='bx bx-x' id="closeIconPanel" onclick="changeIcon('hide')"></i></div>
+        <hr class="generic">
+        <div class="icons">
+          <label>
+            <input type="radio" name="skill-image" value="Creativity.svg">
+            <img src="assets/skills/color/Creativity.svg" alt="">
+          </label>
+          <label>
+            <input type="radio" name="skill-image" value="Comunication.svg">
+            <img src="assets/skills/color/Comunication.svg" alt="">
+          </label>
+
+        </div>
+      </div>
+
+      <!--PROTOTIPO SELECTOR DE RANGO DE SKILL--
+      <div class="edit-range">
+        <div class="range-display">
+          <p><span id="skill-percentage-display">50</span>%</p>
+        </div>
+      <input type="range" id="skill-range" min="0" max="100" value="50">
+      </div>
+
+      SCRIPT SELECTOR DE RANGO DE SKILL
+      <script>
+        var skillRange = document.getElementById('skill-range');
+        var skillpercentageDisplay = document.getElementById('skill-percentage-display');
+        
+      skillRange.addEventListener('input', function() {
+          var currentValue = this.value;
+            skillpercentageDisplay.textContent = currentValue;
+          });
+
+          function changeIcon(action){
+          let div = document.getElementById('choose-icon');
+          if (action == "show") {
+            div.style.height = "80dvh";
+          } else {
+            div.style.height = "0dvh";
+          }
+        }
+        
+    </script>
+    <div class="save_button_container">
+    <button class="skill save_button"><i class='bx bxs-save'></i>Save</button>
+    </div>
+    PROTOTIPO DE PORCENTAJE DE SKILL  --------------------------------------------------------------------------------      
+      
+      <div class="edit-percent">
+        <input type="range" id="skill-percent" min="0" max="100" value="0">
+        <div class="edit-percent-inner">
+          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p id="percentage-display">0%</p></div>
+        </div>
+      </div>
+
+                SCRIPT PORCENTAJE DE SKILL
+<script>
+    var skillPercent = document.getElementById('skill-percent');
+    var percentageDisplay = document.getElementById('percentage-display');
+    var maxValue = 100;
+    
+  skillPercent.addEventListener('input', function() {
+      if (this.value > maxValue) {
+          this.value = maxValue; 
+      }
+      var currentValue = this.value;
+        percentageDisplay.textContent = currentValue + '%';
+      var fillPercentage = (this.value / maxValue) * maxValue;
+      this.style.background = `linear-gradient(to right, var(--skill-color) 0%, var(--skill-color) ${fillPercentage}%, #ddd ${fillPercentage}%, #ddd 100%)`;
+  });
+</script>
+    
+
+<!-- PROTOTIPO TABLA AÑADIR PEOPLE --------------------------------------------------------------------------------------
+      <div class="add-people-table user-li"> 
+        <div>
+          <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+          <p>Name Surname</p>
+        </div>
+        <div>
+          <input type="checkbox" id="userId">
+        </div>
+      </div>
+
+
+      <div class="add-people-table user-li"> 
+        <div>
+          <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+          <p>Name Surname</p>
+        </div>
+        <div>
+          <input type="checkbox" id="userId">
+        </div>
+      </div>
+      PROTOTIPO TABLAS TEAMS ---------------------------------------------------------------------------------------
+
+      <div class="team teams-table" onclick="openTeam(1, this)"><p>Team Name</p><p>#3</p><div><i class="bx bx-chevron-right" ></i></div></div>
+      <div class="height-0" id="team1">
+        <div class="generic generic-table"><div><img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg" alt="user_portrait" id="portrait"><p>Marc Zaragoza</p></div><div><i class="bx bx-chevron-right" onclick="openUser(1,1, this)"></i></div></div>
+          <div class="white height-0 user-options" id="team1-1">
+            <div><p>Username:<span>mazapan</span></p><p>Email:<span>mazapan@gmail.com</span></p></div><div onclick="removeFromGroup()"><i class='bx bxs-user-minus' ></i><p>Remove from group</p></div>
+          </div>
+        <div class="generic generic-table"><div><img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg" alt="user_portrait" id="portrait"><p>Marc Zaragoza</p></div><div><i class="bx bx-chevron-right" onclick="openUser(1,2, this)"></i></div></div>
+        <div class="white height-0 user-options" id="team1-2">
+          <div><p>Username:<span>mazapan</span></p><p>Email:<span>mazapan@gmail.com</span></p></div><div onclick="removeFromGroup()"><i class='bx bxs-user-minus' ></i><p>Remove from group</p></div>
+        </div>
+        <div class="generic generic-table"><div><img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg" alt="user_portrait" id="portrait"><p>Marc Zaragoza</p></div><div><i class="bx bx-chevron-right" onclick="openUser(1,3, this)"></i></div></div>
+        <div class="white height-0 user-options" id="team1-3">
+          <div><p>Username:<span>mazapan</span></p><p>Email:<span>mazapan@gmail.com</span></p></div><div onclick="removeFromGroup()"><i class='bx bxs-user-minus' ></i><p>Remove from group</p></div>
+        </div>
+        <div class="white add"><i class='bx bx-plus fs30'></i></div>
+      </div>
+      
+
+
+      <div class="team teams-table" onclick="openTeam(2, this)"><p>Team Name</p><p>#1</p><div><i class="bx bx-chevron-right" ></i></div></div>
+      <div class="height-0" id="team2">
+        <div class="generic generic-table"><div><img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg" alt="user_portrait" id="portrait"><p>Marc Zaragoza</p></div><div><i class="bx bx-chevron-right" onclick="openUser(2,1, this)"></i></div></div>
+        <div class="white height-0 user-options" id="team2-1">
+          <div><p>Username:<span>mazapan</span></p><p>Email:<span>mazapan@gmail.com</span></p></div><div onclick="removeFromGroup()"><i class='bx bxs-user-minus' ></i><p>Remove from group</p></div>
+        </div>
+        <div class="white add"><i class='bx bx-plus fs30'></i></div>
+      </div>
+      <div class="team teams-table" onclick="openTeam(3, this)"><p>Team Name</p><p>#2</p><div><i class="bx bx-chevron-right" ></i></div></div>
+      <div class="height-0" id="team3">
+        <div class="generic generic-table"><div><img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg" alt="user_portrait" id="portrait"><p>Marc Zaragoza</p></div><div><i class="bx bx-chevron-right" onclick="openUser(3,1, this)"></i></div></div>
+        <div class="white height-0 user-options" id="team3-1">
+          <div><p>Username:<span>mazapan</span></p><p>Email:<span>mazapan@gmail.com</span></p></div><div onclick="removeFromGroup()"><i class='bx bxs-user-minus' ></i><p>Remove from group</p></div>
+        </div>
+        <div class="generic generic-table"><div><img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg" alt="user_portrait" id="portrait"><p>Marc Zaragoza</p></div><div><i class="bx bx-chevron-right" onclick="openUser(3,2, this)"></i></div></div>
+        <div class="white height-0 user-options" id="team3-2">
+          <div><p>Username:<span>mazapan</span></p><p>Email:<span>mazapan@gmail.com</span></p></div><div onclick="removeFromGroup()"><i class='bx bxs-user-minus' ></i><p>Remove from group</p></div>
+        </div>
+        <div class="white add"><i class='bx bx-plus fs30'></i></div>
+      </div>
+      FIN -------------------------------------------------------------------------------------->
+
+      
+
+    </section>
+
+    <script>
+      /* >-----------[ CONTENT VAR ]-----------< */
+      var projects = `
+  <h2>Active Projects</h2>
+  <hr class="project">
+
+  <div class="tag nproject" onclick="">
+    <h3>New Project</h3>
+    <i class='bx bx-plus'></i>
+  </div>
+
+  <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
+    <h3>Project 04</h3>
+    <i class='bx bx-chevrons-right'></i>
+  </div>
+
+  <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
+    <h3>Project 03</h3>
+    <i class='bx bx-chevrons-right'></i>
+  </div>
+
+  <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
+    <h3>Project 02</h3>
+    <i class='bx bx-chevrons-right'></i>
+  </div>
+
+  <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
+    <h3>Project 01</h3>
+    <i class='bx bx-chevrons-right'></i>
+  </div>
+
+`;
+
+      var user_management = `
+  <h2>Users Management</h2>
+  <hr class="user">
+
+  <div class="scroll_tag user" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
+      <h3>Import CSV</h3>
+      <i class='bx bx-chevrons-right'></i>
+  </div>
+
+  <div class="scroll_tag user" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
+      <h3>All Users</h3>
+      <i class="bx bx-chevrons-right"></i>
+  </div>
+
+  <div class="scroll_tag log" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
+      <h3>Logs</h3>
+      <i class="bx bx-chevrons-right"></i>
+  </div>
+`;
+
+var diveProjectX = `
+  <h1>Project XX</h1>
+
+  <div class="scroll_tag skill" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
+    <h3>Skills</h3>
+    <i class='bx bx-chevrons-right'></i>
+  </div>
+
+  <div class="tag team">
+      <h3>Add People</h3>
+      <i class='bx bx-plus'></i>
+  </div>
+
+  <h2>Activities</h2>
+  <hr class="activity">
+`;
+
+      function callProjects(a) {
+        if (a == "+") {
+          document.getElementById("main").innerHTML += projects;
+        }else{
+          document.getElementById("main").innerHTML = projects;
+        }
+      }
+
+      function diveProject(id, a) {
+        if (a == "+") {
+          document.getElementById("main").innerHTML += diveProjectX;
+        }else{
+          document.getElementById("main").innerHTML = diveProjectX;
+        }
+      }
+
+      function callUserManagement(a) {
+        if (a == "+") {
+          document.getElementById("main").innerHTML += user_management;
+        }else{
+          document.getElementById("main").innerHTML = user_management;
+        }
+      }
+
+      function openTeam(id, icon){
+  let div = document.getElementById(`team${id}`);
+  icon = icon.querySelector('.bx-chevron-right');
+
+  if (div.classList.contains("height-0")) {
+  div.classList.remove("height-0");
+  div.classList.add("fit-content");
+  icon.style.transform = "rotate(90deg)";
+} else {
+  div.classList.remove("fit-content");
+  div.classList.add("height-0");
+  icon.style.transform = "rotate(0deg)";
+}
+      }
+
+      function openUser(teamId, userId, icon) {
+  let div = document.getElementById(`team${teamId}-${userId}`);
+
+  if (div.classList.contains("height-0")) {
+    div.style.padding = "4px 10px";
+    div.classList.remove("height-0");
+    div.classList.add("fit-content");
+    icon.style.transform = "rotate(90deg)";
+  } else {
+    div.style.padding = "0px";
+    div.classList.remove("fit-content");
+    div.classList.add("height-0");
+    icon.style.transform = "rotate(0deg)";
+  }
+  
+}
+
+function resetUserIcons(teamId) {
+  let teamElements = document.querySelectorAll(`.team:not(#team${teamId}) .bx-chevron-right`);
+  teamElements.forEach(icon => icon.style.transform = "rotate(0deg)");
+}
+
+
+      /* >-----------[ CONTENT ]-----------< */
+
+      //callProjects("+");
+      // callUserManagement("+");
+
+      /* >-----------[ SLIDERS ]-----------< */
+      const screenWidth =
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.body.clientWidth;
+      const porcentajeEnPixeles = (30 / 100) * screenWidth;
+      let isDragging = false;
+      let draggedElement = null;
+      var firstx = false;
+      const scroll_tag = document.querySelectorAll(".scroll_tag");
+
+      function handleStart(element) {
+        if (element.classList.contains("scroll_tag")) {
+          isDragging = true;
+          draggedElement = element;
+        }
+      }
+
+      document.addEventListener("mouseup", handleEnd);
+      document.addEventListener("touchend", handleEnd);
+      document.addEventListener("mousemove", handleMove);
+      document.addEventListener("touchmove", handleMove);
+
+      function handleEnd() {
+        draggedElement.style.transition = "all 0.6s ease";
+        isDragging = false;
+        draggedElement = null;
+        firstx = false;
+        scroll_tag.forEach((element) => {
+          element.style.transform = "translateX(-30%)";
+        });
+      }
+
+      function handleMove(event) {
+        if (isDragging && draggedElement) {
+          let x;
+          draggedElement.style.transition = "all 0s ease";
+
+          if (event.type === "mousemove") {
+            x = event.clientX;
+          } else if (event.type === "touchmove") {
+            // event.preventDefault(); // Prevent scrolling
+            const touches = event.touches;
+            if (touches.length > 0) {
+              const touch = touches[0];
+              x = touch.clientX || touch.pageX;
+            }
+          }
+
+          if (x !== undefined) {
+            if (!firstx) {
+              firstx = x;
+            }
+            if (x > firstx) {
+              const translateXValue = x - firstx;
+              if (translateXValue > porcentajeEnPixeles - 30) {
+                setTimeout(() => {
+                  //document.body.setAttribute("transition-style", "in:wipe:right");
+                }, 400);
+                //document.body.removeAttribute("transition-style", "in:wipe:right");
+              } else {
+                draggedElement.style.transform =
+                  "translateX(calc(" + translateXValue + "px - 30%))";
+              }
+            }
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

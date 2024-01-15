@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../juan.css" />
+</head>
+
+<body>
+
+  <header>
+    <div class="logo"><span>Education</span></div>
+    <div class="actual_user">
+      <p id="fullname">Nicolas Kuznetzov</p>
+      <img src="../assets/profilepic.png" alt="user_portrait" id="portrait" onclick="editProfile()" />
+    </div>
+  </header>
+  <div class="edit-profile height-0" id="edit-profile">
+    <div class="nav">
+      <i class='bx bx-undo' onclick="editProfile()"></i>
+      <div id="nav-extra"><button onclick="logOut()">Log Out</button></div>
+    </div>
+    <div><input type="file" id="portrait" onchange="updateImgPreview(this)"><label for="portrait"></label></div>
+    <div>
+      <p id="user-name">Name</p>
+    </div>
+    <div>
+      <p id="user-surname">Surname Surname</p>
+    </div>
+    <div><i class='bx bxs-envelope'></i>
+      <p id="user-email">example@example.com</p>
+    </div>
+    <div><i class='bx bxs-user'></i>
+      <p id="user-username">nasusu</p>
+    </div>
+    <h3>Change Password</h3>
+    <hr class="user">
+    <div><i class='bx bxs-lock'></i><input type="password" id="user-current-password"
+        placeholder="Introduce your current password"></div>
+    <div><i class='bx bxs-key'></i><input type="password" id="user-new-password"
+        placeholder="Introduce your new password"></div>
+    <div class="save_button_container">
+      <button class="user save_button"><i class='bx bxs-save'></i>Save</button>
+    </div>
+  </div>
+  <script>
+    function editProfile() {
+      let profileDiv = document.getElementById("edit-profile");
+      let hrElement = profileDiv.querySelector("hr.user");
+
+      if (profileDiv.classList.contains("height-0")) {
+        hrElement.style.display = "block";
+        profileDiv.classList.remove("height-0");
+      } else {
+        profileDiv.classList.add("height-0");
+        hrElement.style.display = "none";
+      }
+    }
+
+    function updateImgPreview(input) {
+      let label = input.nextElementSibling;
+
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          label.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+  </script>
+  <section id="main">
+
+
+    <!-- NAV -->
+    <div class="nav">
+      <i class='bx bx-undo'></i>
+      <div id="nav-extra"><i class='bx bxs-edit-alt'></i>
+        <p>Edit <span id="nav-extra-type">Activity</span></p>
+      </div>
+      <!-- EDIT PROJECT <i class='bx bxs-edit-alt'></i><p>Edit <span id="nav-extra-type">Project</span></p> -->
+      <!-- SAVE PROJECT <i class='bx bxs-save' ></i><p>Save <span id="nav-extra-type">Project</span></p> -->
+    </div>
+
+    <!-- ######## TEXTO AQUI ######## -->
+    <div class="double-title">
+      <span>Project XX</span>
+      <p class="activity-color">Act XX</p>
+    </div>
+
+    <h2>Description</h2>
+    <hr class="activity">
+    <p class="act-desc">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+      magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+      consequat.
+    </p>
+
+    <h2>Skills</h2>
+    <hr class="skill">
+
+    <div class="percent_tag skill ">
+      <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+        <p>Nombre Skill</p>
+      </div>
+      <div>
+        <p class="percentage-display">0%</p>
+      </div>
+    </div>
+    <div class="percent_tag skill ">
+      <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+        <p>Nombre Skill</p>
+      </div>
+      <div>
+        <p class="percentage-display">0%</p>
+      </div>
+    </div>
+    <div class="percent_tag skill ">
+      <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+        <p>Nombre Skill</p>
+      </div>
+      <div>
+        <p class="percentage-display">0%</p>
+      </div>
+    </div>
+    <div class="percent_tag skill ">
+      <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+        <p>Nombre Skill</p>
+      </div>
+      <div>
+        <p class="percentage-display">0%</p>
+      </div>
+    </div>
+
+    <h2>Students</h2>
+    <hr class="team">
+
+    <div class="scroll_tag team" onclick="handleClick(this)" onmousedown="handleStart(this)"
+      ontouchstart="handleStart(this)">
+      <h3>Teams</h3>
+      <i class='bx bx-chevrons-right'></i>
+    </div>
+
+    <div class="with-filter">
+      <h2>Evaluate</h2>
+      <i class='bx bxs-filter-alt bx-flip-horizontal' onclick="filterSort('evaluateteams', 'sort')"></i>
+    </div>
+    <hr class="team">
+
+    <div id="evaluateteams">
+      <div class="sort">
+        <!-- TEAM NAME -->
+        <div class="teams-table" onclick="openTeam(1, this)">
+          <p>A Name</p>
+          <p>#5</p>
+          <div><i class="bx bx-chevron-right"></i></div>
+        </div>
+        <div class="height-0" id="team1">
+          <!-- TEAM USERS -->
+          <div class="generic generic-table" onclick="openUser(2, this)">
+            <div>
+              <img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg"
+                alt="user_portrait" id="portrait">
+              <p>Marc Zaragoza</p>
+            </div>
+            <div><i class="bx bx-chevron-right"></i></div>
+          </div>
+          <!-- USER GRADES -->
+          <div class="white height-0 user-grades" id="2">
+            <!-- EACH GRADE -->
+            <div class="edit-grades">
+              <div>
+                <img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+                <p>Nombre Skill</p>
+              </div>
+              <div>
+                <input type="text" placeholder="--" maxlength="2" pattern="[0-9]|10" oninput="validateInput(this)">
+                <p> / 10</p>
+              </div>
+            </div>
+            <!-- EACH GRADE ENDING -->
+
+            <div class="edit-grades">
+              <div>
+                <img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+                <p>Nombre Skill</p>
+              </div>
+              <div>
+                <input type="text" placeholder="--" maxlength="2" pattern="[0-9]|10" oninput="validateInput(this)">
+                <p> / 10</p>
+              </div>
+            </div>
+          </div>
+          <!-- USER GRADES ENDING -->
+
+          <div class="generic generic-table" onclick="openUser(3, this)">
+            <div>
+              <img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg"
+                alt="user_portrait" id="portrait">
+              <p>Marc Zaragoza</p>
+            </div>
+            <div><i class="bx bx-chevron-right"></i></div>
+          </div>
+          <div class="white height-0 user-grades" id="3">
+            <div class="edit-grades">
+              <div>
+                <img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+                <p>Nombre Skill</p>
+              </div>
+              <div>
+                <input type="text" placeholder="--" maxlength="2" pattern="[0-9]|10" oninput="validateInput(this)">
+                <p> / 10</p>
+              </div>
+            </div>
+          </div>
+          <!-- TEAM USERS ENDING -->
+        </div>
+        <!-- TEAM NAME END -->
+      </div>
+
+      <!-- EXAMPLES-->
+      <div class="sort">
+        <div class="teams-table" onclick="openTeam(2, this)">
+          <p>C Name</p>
+          <p>#5</p>
+          <div><i class="bx bx-chevron-right"></i></div>
+        </div>
+        <div class="height-0" id="team2">
+          <div class="generic generic-table" onclick="openUser(7, this)">
+            <div>
+              <img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg"
+                alt="user_portrait" id="portrait">
+              <p>Marc Zaragoza</p>
+            </div>
+            <div><i class="bx bx-chevron-right"></i></div>
+          </div>
+          <div class="white height-0 user-grades" id="7">
+            <div class="edit-grades">
+              <div>
+                <img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+                <p>Nombre Skill</p>
+              </div>
+              <div>
+                <input type="text" placeholder="--" maxlength="2" pattern="[0-9]|10" oninput="validateInput(this)">
+                <p> / 10</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="generic generic-table" onclick="openUser(6, this)">
+            <div>
+              <img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg"
+                alt="user_portrait" id="portrait">
+              <p>Marc Zaragoza</p>
+            </div>
+            <div><i class="bx bx-chevron-right"></i></div>
+          </div>
+          <div class="white height-0 user-grades" id="6">
+            <div class="edit-grades">
+              <div>
+                <img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+                <p>Nombre Skill</p>
+              </div>
+              <div>
+                <input type="text" placeholder="--" maxlength="2" pattern="[0-9]|10" oninput="validateInput(this)">
+                <p> / 10</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sort">
+        <div class="teams-table" onclick="openTeam(3, this)">
+          <p>B Name</p>
+          <p>#5</p>
+          <div><i class="bx bx-chevron-right"></i></div>
+        </div>
+        <div class="height-0" id="team3">
+          <div class="generic generic-table" onclick="openUser(73, this)">
+            <div>
+              <img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg"
+                alt="user_portrait" id="portrait">
+              <p>Marc Zaragoza</p>
+            </div>
+            <div><i class="bx bx-chevron-right"></i></div>
+          </div>
+          <div class="white height-0 user-grades" id="73">
+            <div class="edit-grades">
+              <div>
+                <img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+                <p>Nombre Skill</p>
+              </div>
+              <div>
+                <input type="text" placeholder="--" maxlength="2" pattern="[0-9]|10" oninput="validateInput(this)">
+                <p> / 10</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="generic generic-table" onclick="openUser(62, this)">
+            <div>
+              <img src="https://www.challengedathletes.org/wp-content/uploads/2023/08/portrait-square-03.jpg"
+                alt="user_portrait" id="portrait">
+              <p>Marc Zaragoza</p>
+            </div>
+            <div><i class="bx bx-chevron-right"></i></div>
+          </div>
+          <div class="white height-0 user-grades" id="62">
+            <div class="edit-grades">
+              <div>
+                <img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon">
+                <p>Nombre Skill</p>
+              </div>
+              <div>
+                <input type="text" placeholder="--" maxlength="2" pattern="[0-9]|10" oninput="validateInput(this)">
+                <p> / 10</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- EXAMPLES ENDING-->
+
+    </div>
+    <script>
+      function validateInput(input) {
+        let value = parseInt(input.value);
+        if (isNaN(value) || value < 0 || value > 10) {
+          input.value = input.value.slice(0, -1);
+        }
+      }
+
+      function openTeam(id, icon) {
+        let div = document.getElementById(`team${id}`);
+        icon = icon.querySelector('.bx-chevron-right');
+
+        if (div.classList.contains("height-0")) {
+          div.classList.remove("height-0");
+          div.classList.add("fit-content");
+          icon.style.transform = "rotate(90deg)";
+        } else {
+          div.classList.remove("fit-content");
+          div.classList.add("height-0");
+          icon.style.transform = "rotate(0deg)";
+        }
+      }
+
+      function openUser(userId, user) {
+        let div = document.getElementById(`${userId}`);
+        let icon = user.querySelector('.bx-chevron-right');
+
+        if (div.classList.contains("height-0")) {
+          div.classList.remove("height-0");
+          div.classList.add("fit-content");
+          icon.style.transform = "rotate(90deg)";
+        } else {
+          div.style.padding = "0px";
+          div.classList.remove("fit-content");
+          div.classList.add("height-0");
+          icon.style.transform = "rotate(0deg)";
+        }
+      }
+
+      function resetUserIcons(teamId) {
+        let teamElements = document.querySelectorAll(`.team:not(#team${teamId}) .bx-chevron-right`);
+        teamElements.forEach(icon => icon.style.transform = "rotate(0deg)");
+      }
+    </script>
+    <script>
+      const screenWidth =
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.body.clientWidth;
+      const porcentajeEnPixeles = (30 / 100) * screenWidth;
+      let isDragging = false;
+      let draggedElement = null;
+      var firstx = false;
+      const scroll_tag = document.querySelectorAll(".scroll_tag");
+
+      function handleStart(element) {
+        if (element.classList.contains("scroll_tag")) {
+          isDragging = true;
+          draggedElement = element;
+        }
+      }
+
+      document.addEventListener("mouseup", handleEnd);
+      document.addEventListener("touchend", handleEnd);
+      document.addEventListener("mousemove", handleMove);
+      document.addEventListener("touchmove", handleMove);
+
+      function handleEnd() {
+        draggedElement.style.transition = "all 0.6s ease";
+        isDragging = false;
+        draggedElement = null;
+        firstx = false;
+        scroll_tag.forEach((element) => {
+          element.style.transform = "translateX(-30%)";
+        });
+      }
+
+      function handleMove(event) {
+        if (isDragging && draggedElement) {
+          let x;
+          draggedElement.style.transition = "all 0s ease";
+
+          if (event.type === "mousemove") {
+            x = event.clientX;
+          } else if (event.type === "touchmove") {
+            event.preventDefault(); // Prevent scrolling
+            const touches = event.touches;
+            if (touches.length > 0) {
+              const touch = touches[0];
+              x = touch.clientX || touch.pageX;
+            }
+          }
+
+          if (x !== undefined) {
+            if (!firstx) {
+              firstx = x;
+            }
+            if (x > firstx) {
+              const translateXValue = x - firstx;
+              if (translateXValue > porcentajeEnPixeles - 30) {
+                setTimeout(() => {
+                }, 400);
+              } else {
+                draggedElement.style.transform =
+                  "translateX(calc(" + translateXValue + "px - 30%))";
+              }
+            }
+          }
+        }
+      }
+
+      function filterSort(containerId, itemClass) {
+        let container = document.getElementById(containerId);
+        let items = Array.from(container.getElementsByClassName(itemClass));
+
+        if (!filterSort.counter) {
+          filterSort.counter = 1;
+        } else {
+          filterSort.counter *= -1;
+        }
+
+        let sortedItems = items.slice().sort((a, b) => {
+          let nameA = a.querySelector('p').textContent.toLowerCase();
+          let nameB = b.querySelector('p').textContent.toLowerCase();
+
+          return filterSort.counter * nameA.localeCompare(nameB);
+        });
+
+        items.forEach(person => container.removeChild(person));
+        sortedItems.forEach(person => container.appendChild(person));
+      }
+    </script>
+    <!-- ######## FIN TEXTO ######## -->
+  </section>
+</body>
+
+</html>

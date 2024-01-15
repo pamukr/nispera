@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../juan.css" />
+</head>
+
+<body>
+
+  <header>
+    <div class="logo"><span>Education</span></div>
+    <div class="actual_user">
+      <p id="fullname">Nicolas Kuznetzov</p>
+      <img src="../assets/profilepic.png" alt="user_portrait" id="portrait" onclick="editProfile()" />
+    </div>
+  </header>
+  <div class="edit-profile height-0" id="edit-profile">
+    <div class="nav">
+      <i class='bx bx-undo' onclick="editProfile()"></i>
+      <div id="nav-extra"><button onclick="logOut()">Log Out</button></div>
+    </div>
+    <div><input type="file" id="portrait" onchange="updateImgPreview(this)"><label for="portrait"></label></div>
+    <div>
+      <p id="user-name">Name</p>
+    </div>
+    <div>
+      <p id="user-surname">Surname Surname</p>
+    </div>
+    <div><i class='bx bxs-envelope'></i>
+      <p id="user-email">example@example.com</p>
+    </div>
+    <div><i class='bx bxs-user'></i>
+      <p id="user-username">nasusu</p>
+    </div>
+    <h3>Change Password</h3>
+    <hr class="user">
+    <div><i class='bx bxs-lock'></i><input type="password" id="user-current-password"
+        placeholder="Introduce your current password"></div>
+    <div><i class='bx bxs-key'></i><input type="password" id="user-new-password"
+        placeholder="Introduce your new password"></div>
+    <div class="save_button_container">
+      <button class="user save_button"><i class='bx bxs-save'></i>Save</button>
+    </div>
+  </div>
+  <script>
+    function editProfile() {
+      let profileDiv = document.getElementById("edit-profile");
+      let hrElement = profileDiv.querySelector("hr.user");
+
+      if (profileDiv.classList.contains("height-0")) {
+        hrElement.style.display = "block";
+        profileDiv.classList.remove("height-0");
+      } else {
+        profileDiv.classList.add("height-0");
+        hrElement.style.display = "none";
+      }
+    }
+
+    function updateImgPreview(input) {
+      let label = input.nextElementSibling;
+
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          label.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+  </script>
+  <section id="main">
+
+
+    <!-- NAV -->
+    <div class="nav">
+      <i class='bx bx-undo'></i>
+      <div id="nav-extra"></div>
+      <!-- EDIT PROJECT <i class='bx bxs-edit-alt'></i><p>Edit <span id="nav-extra-type">Project</span></p> -->
+      <!-- SAVE PROJECT <i class='bx bxs-save' ></i><p>Save <span id="nav-extra-type">Project</span></p> -->
+    </div>
+
+    <!-- ######## TEXTO AQUI ######## -->
+    <div class="title">
+      <h1>Users</h1>
+    </div>
+
+    <div class="with-filter">
+      <h2>Teachers</h2>
+      <i class='bx bxs-filter-alt bx-flip-horizontal' onclick="filterSort('addpeople1', 'add-people-table')"></i>
+    </div>
+    <hr class="user">
+
+    <div id="addpeople1">
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>D Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>B Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>A Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>C Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+  </div>
+
+    <div class="with-filter">
+      <h2>Active Students</h2>
+      <i class='bx bxs-filter-alt bx-flip-horizontal' onclick="filterSort('addpeople2', 'add-people-table')"></i>
+    </div>
+    <hr class="user">
+
+    <div class="group-tags-container">
+      <div>
+        <div id="group-tags-suggestions">
+
+        </div>
+        <input type="text" id="searchGroup" placeholder="Search for a group..." oninput="updateSuggestions(this.value)">
+        <i class='bx bxs-trash' onclick="clearInput(document.getElementById('searchGroup'))"></i>
+      </div>
+      <div id="group-tags">
+
+      </div>
+    </div>
+
+    <div id="addpeople2">
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>Name Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="../assets/profilepic.png" alt="">
+        <p>B Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="../assets/profilepic.png" alt="">
+        <p>A Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>C Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>Name Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="../assets/profilepic.png" alt="">
+        <p>Z Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="../assets/profilepic.png" alt="">
+        <p>X Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>Name Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>Name Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="../assets/profilepic.png" alt="">
+        <p>Name Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="../assets/profilepic.png" alt="">
+        <p>Name Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+    <div class="add-people-table user-li">
+      <div>
+        <img src="https://avatars.pfptown.com/784/anime-boy-pfp-4323.png" alt="">
+        <p>Name Surname</p>
+      </div>
+      <div>
+        <input type="checkbox" id="userId">
+      </div>
+    </div>
+  </div>
+
+    <script>
+      function filterSort(containerId, itemClass) {
+  let container = document.getElementById(containerId);
+  let items = Array.from(container.getElementsByClassName(itemClass));
+
+  if (!filterSort.counter) {
+    filterSort.counter = 1;
+  } else {
+    filterSort.counter *= -1;
+  }
+
+  let sortedItems = items.slice().sort((a, b) => {
+    let nameA = a.querySelector('p').textContent.toLowerCase();
+    let nameB = b.querySelector('p').textContent.toLowerCase();
+    
+    return filterSort.counter * nameA.localeCompare(nameB);
+  });
+
+  items.forEach(person => container.removeChild(person));
+  sortedItems.forEach(person => container.appendChild(person));
+}
+
+      function clearInput(input) {
+        input.value = '';
+        updateSuggestions('');
+      }
+
+      var suggestions = ['1r DAW', '2n DAW', '1r ASIX', '2n ASIX', 'DAM', 'DAM 2.0', 'ADE 2', 'ADE', '3r ASIX', '3r DAW'];
+      var choosenSuggestions = "";
+
+
+      function updateSuggestions(inputText) {
+        let suggestionsContainer = document.getElementById('group-tags-suggestions');
+        if (inputText == '') {
+          suggestionsContainer.innerHTML = '';
+        } else {
+          inputText = inputText.trim();
+          suggestions.sort();
+          suggestionsContainer.innerHTML = '';
+          suggestions.forEach(function (suggestion) {
+            if (suggestion.toLowerCase().includes(inputText.toLowerCase())) {
+              let suggestionElement = document.createElement('p');
+              suggestionElement.className = 'suggestion';
+
+              suggestionElement.textContent = suggestion;
+              suggestionElement.onclick = function () {
+                addTag(suggestion);
+                clearInput(document.querySelector('input[type="text"]'));
+              };
+              suggestionsContainer.appendChild(suggestionElement);
+            }
+          });
+        }
+      }
+
+
+      function addTag(tag) {
+        choosenSuggestions += tag + ';;';
+        let tagContainer = document.getElementById('group-tags');
+        let newTag = document.createElement('div');
+        newTag.className = 'team';
+        newTag.onclick = function () {
+          removeTag(this);
+        };
+        newTag.innerHTML = '<p>' + tag + '</p><i class="bx bx-x"></i>';
+        tagContainer.appendChild(newTag);
+        suggestions.splice(suggestions.indexOf(tag), 1);
+        updateSuggestions('');
+      }
+
+
+      function removeTag(tag) {
+        let tagContainer = document.getElementById('group-tags');
+        let removedTag = tag.querySelector('p').textContent;
+        suggestions.push(removedTag);
+        choosenSuggestions = choosenSuggestions.split(";;").filter(function (item) {
+          return item.trim() !== removedTag.trim();
+        }).join(";;");
+        tagContainer.removeChild(tag);
+        updateSuggestions('');
+      }
+    </script>
+    <!-- ######## FIN TEXTO ######## -->
+  </section>
+</body>
+
+</html>
