@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+</head>
+
+<body>
+    <input id="username" placeholder="username" type="text">
+    <input id="password" placeholder="password" type="password">
+    <button onclick="log()">Log in</button>
+</body>
+
+</html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+
+<script>
+    //Fetch
+    function fetchNispera(...attributes) {
+        return new Promise((resolve, reject) => {
+            let data = {};
+            attributes.forEach(attribute => {
+                data[attribute.name] = attribute.value;
+            });
+            fetch('nispera.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.text()) // Convertir la respuesta a texto
+                .then(responseText => {
+                    resolve(responseText); // Resolvemos la promesa con el responseText
+                })
+                .catch(error => {
+                    reject(error); // Rechazamos la promesa en caso de error
+                });
+        });
+    }
+
+    function log() {
+        var username = document.getElementById("username").value;
+        var password = CryptoJS.SHA256(CryptoJS.SHA256(document.getElementById("password").value).toString()).toString();
+        
+        fetchNispera({ name: "action", value: "login" }, { name: "username", value: username }, { name: "password", value: password })
+            .then(result => {
+                if (result == "true") {
+                    //Si el resultado es true, se redirige a la página principal
+                    fetchNispera({ name: "action", value: "main" })
+                        .then(result => {
+                            document.open();
+                            document.write(result);
+                            document.close();
+                        });
+                }
+            });
+        localStorage.setItem("token", username + ";" + password);
+    }
+
+    if (localStorage.getItem("token")) {
+        //El token consisitirá en el user;sha256
+        var username = localStorage.getItem("token").split(";")[0];
+        var password = localStorage.getItem("token").split(";")[1];
+
+        //Se realiza un fetch a nispera.php con los datos del usuario y la contraseña
+        fetchNispera({ name: "action", value: "login" }, { name: "username", value: username }, { name: "password", value: password })
+            .then(result => {
+                if (result == "true") {
+                    //Si el resultado es true, se redirige a la página principal
+                    fetchNispera({ name: "action", value: "main" })
+                        .then(result => {
+                            document.open();
+                            document.write(result);
+                            document.close();
+                        });
+                }
+            });
+    }
+</script>
