@@ -48,4 +48,91 @@
         })
         location.reload();
     }
+
+    function editProfile() {
+        let profileDiv = document.getElementById("edit-profile");
+        let hrElement = profileDiv.querySelector("hr.user");
+
+        if (profileDiv.classList.contains("height-0")) {
+            hrElement.style.display = "block";
+            profileDiv.classList.remove("height-0");
+        } else {
+            profileDiv.classList.add("height-0");
+            hrElement.style.display = "none";
+        }
+    }
+
+    function updateImgPreview(input) {
+        let label = input.nextElementSibling;
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                label.style.backgroundImage = `url('${e.target.result}')`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function changePassword() {
+        let currentPass = document.getElementById("user-current-password").value;
+        let newPass = document.getElementById("user-new-password").value;
+        fetchNispera({
+            name: "action",
+            value: "changePassword"
+        }, {
+            name: "current",
+            value: currentPass
+        }, {
+            name: "new",
+            value: newPass
+        }).then(response => {
+            if (response == "true") {
+                showStatus(true, "Contraseña cambiada correctamente");
+            } else {
+                showStatus(false, "Contraseña incorrecta");
+            }
+        });
+    }
+
+    async function wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function showStatus(status, message) {
+        const messageLog = document.createElement('div');
+        messageLog.classList.add('messageLog');
+        let color = "";
+
+        if (status) {
+            status = 'bx-check';
+            color = "green";
+        } else {
+            status = 'bx-x';
+            color = "red";
+        }
+        messageLog.innerHTML = `<div><i class='bx ${status}'></i><p class='${color}'>${message}</p></div>`;
+        document.body.appendChild(messageLog);
+        await wait(3000);
+        messageLog.style.opacity = '0';
+        await wait(1000);
+        messageLog.remove();
+    }
+
+    function changePP(id) {
+        //Creamos un form y ponemos la imagen
+        let pp = document.getElementById("pp").files[0];
+        let data = new FormData();
+        data.append('pp', pp);
+        data.append('changePP', 'true');
+        data.append('userid', id);
+        fetch('nispera.php', {
+                method: 'POST',
+                body: data
+            })
+            .then(response => response.text())
+            .then(content => {
+                console.log(content);
+            });
+    }
 </script>

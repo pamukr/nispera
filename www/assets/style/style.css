@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&family=Dongle&display=swap');
 
 /* 
     font-family: 'Quantico', sans-serif;
@@ -232,12 +232,12 @@ header{
 
 section{
   margin-top: 80px;
-  overflow-y: auto;
-  overflow: hidden;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .edit-profile{
-  position: fixed;
+  position: absolute;
   height: 0px;
   transition: height 0.6s ease;
   overflow: hidden;
@@ -495,15 +495,18 @@ section{
   align-items: center;
   padding: 5px 20px;
   max-width: 80vw;
-  min-width: 60vw;
   overflow: hidden;
   border-radius: 50px;
   filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.342));
 }
 
 .messageLog div p{
-  font-size: var(--h3);
-  font-family: var(--secondary-font);
+  padding-top: 4px;
+  font-family: 'Dongle', cursive;
+  font-size: 30px;
+  font-weight: 700;
+  vertical-align: middle;
+  display: table-cell;
 }
 
 .messageLog .red{
@@ -831,7 +834,7 @@ section{
   transform: translateX(-30%);
   cursor: grab;
   position: relative;
-  transition: all 0.6s ease;
+  transition: transform 0.6s ease;
   user-select: none;
   margin-top: 16px;
   margin-left: 10px;
@@ -1045,7 +1048,7 @@ section{
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: all 0.6s ease;
+  transition: filter 0.6s ease;
   cursor: pointer;
   font-weight: 600;
   font-family: var(--secondary-font);
@@ -1740,8 +1743,12 @@ section{
   background-color: var(--completed-activity-color);
 }
 
-.team{
+.team:nth-child(even){
   background-color: var(--team-color);
+}
+
+.team:nth-child(odd) {
+  background-color: var(--team-2-color);
 }
 
 .team-2 {
