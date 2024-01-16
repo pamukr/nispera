@@ -72,6 +72,30 @@ if (input.files && input.files[0]) {
   reader.readAsDataURL(input.files[0]);
 }
 }
+
+async function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+async function showStatus(status ,message) {
+            const messageLog = document.createElement('div');
+            messageLog.classList.add('messageLog');
+            let color = "";
+
+            if(status){
+              status = 'bx-check';
+              color = "green";
+            }else{
+              status = 'bx-x';
+              color = "red";
+            }
+            messageLog.innerHTML = `<div><i class='bx ${status}'></i><p class='${color}'>${message}</p></div>`;
+            document.body.appendChild(messageLog);
+            await wait(3000);
+            messageLog.style.opacity = '0';
+            await wait(1000);
+            messageLog.remove();
+        }
     </script>
     <section id="main">
 
@@ -110,7 +134,7 @@ if (input.files && input.files[0]) {
   <div class="tag user">
       <h3>Import CSV</h3>
       <label for="csvInput" class="bx bx-upload"></label>
-  <input type="file" id="csvInput" accept=".csv">
+  <input type="file" id="csvInput" accept=".csv" oninput="csvImported(false)">
   </div>
 
   <div class="scroll_tag user" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
@@ -123,7 +147,49 @@ if (input.files && input.files[0]) {
       <i class="bx bx-chevrons-right"></i>
   </div>
 
+  <script>
+    
+        async function csvImported(status) {
+            const label = document.querySelector('label[for="csvInput"]');
+            label.style.transition = 'all 0.5s ease';
 
+            if (status) {
+                label.style.transform = 'rotate(360deg)';
+                label.style.opacity = '0';
+
+                await wait(1000);
+                label.style.transform = 'rotate(0deg)';
+                label.classList.remove('bx-upload');
+                label.classList.add('bx-check-double');
+                label.style.fontSize = '2rem';
+                label.style.opacity = '1';
+                await wait(4000);
+                label.style.opacity = '0';
+                label.classList.remove('bx-check-double');
+                label.style.fontSize = '24px';
+                label.classList.add('bx-upload');
+                label.style.opacity = '1';
+            } else {
+              label.style.transform = 'rotate(360deg)';
+                label.style.transition = 'transform 0.7s, opacity 1s, all 1s';
+                label.style.opacity = '0';
+
+                await wait(1000);
+                label.style.transform = 'rotate(0deg)';
+                label.classList.remove('bx-upload');
+                label.classList.add('bx-x');
+                label.style.fontSize = '2rem';
+                label.style.opacity = '1';
+                await wait(4000);
+                label.style.opacity = '0';
+                label.classList.remove('bx-x');
+                label.style.fontSize = '24px';
+                label.classList.add('bx-upload');
+                label.style.opacity = '1';
+                
+            }
+        }
+  </script>
   <script>
     const screenWidth =
         window.innerWidth ||

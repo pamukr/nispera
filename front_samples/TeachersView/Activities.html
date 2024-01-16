@@ -157,7 +157,7 @@
     <div id="evaluateteams">
       <div class="sort">
         <!-- TEAM NAME -->
-        <div class="teams-table" onclick="openTeam(1, this)">
+        <div class="team teams-table" onclick="openTeam(1, this)">
           <p>A Name</p>
           <p>#5</p>
           <div><i class="bx bx-chevron-right"></i></div>
@@ -227,7 +227,7 @@
 
       <!-- EXAMPLES-->
       <div class="sort">
-        <div class="teams-table" onclick="openTeam(2, this)">
+        <div class="team-2 teams-table" onclick="openTeam(2, this)">
           <p>C Name</p>
           <p>#5</p>
           <div><i class="bx bx-chevron-right"></i></div>
@@ -278,7 +278,7 @@
       </div>
 
       <div class="sort">
-        <div class="teams-table" onclick="openTeam(3, this)">
+        <div class="team teams-table" onclick="openTeam(3, this)">
           <p>B Name</p>
           <p>#5</p>
           <div><i class="bx bx-chevron-right"></i></div>
@@ -332,8 +332,8 @@
     </div>
     <script>
       function validateInput(input) {
-        let value = parseInt(input.value);
-        if (isNaN(value) || value < 0 || value > 10) {
+        let value = input.value;
+        if (isNaN(value) || value < 0 || value > 10 || value == "00") {
           input.value = input.value.slice(0, -1);
         }
       }
