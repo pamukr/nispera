@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../juan.css" />
+    <link rel="stylesheet" href="../../www/assets/style/style.css" />
   </head>
   <body>
     
@@ -22,7 +22,7 @@
       <div class="actual_user">
         <p id="fullname">Nicolas Kuznetzov</p>
         <img
-          src="../assets/profilepic.png"
+          src="../../www/assets/pp/default-user-icon.png"
           alt="user_portrait"
           id="portrait"
           onclick="editProfile()"
@@ -110,36 +110,95 @@
       </div>
 
       <!-- ######## TEXTO AQUI ######## -->
-      <div class="edit-user-profile">
-        <div><input type="file" id="portrait" onchange="updateImgPreview(this)"><label for="portrait" ></label></div>
-        <div><input type="text" placeholder="Name"></div>
-        <div><input type="text" placeholder="Surname Surname"></div>
+      <div class="title"><input type="text" placeholder="Act XX"></div>
+
+      <div class="edit-desc">
+        <textarea placeholder="Introduce this activity description..."></textarea>
       </div>
-      <div class="edit-user-profile-additional">
-      <div><i class='bx bxs-envelope' ></i><p id="user-email">example@example.com</p></div>
-      <div><i class='bx bxs-user' ></i><p id="user-username">nasusu</p></div>
-      <div><i class='bx bxs-id-card' ></i><select id="">
-        <option value="" selected>Student</option>
-        <option value="">Teacher</option>
-        <option value="">Admin</option>        
-      </select></div>
-      <div><i class='bx bxs-group' ></i><select id="">
-        <option value="" selected>Ungrouped</option>
-        <option value="">1r DAW</option>
-        <option value="">2n DAW</option>
-      </select></div></div>
-    </div>
 
-    <div class="save_button_container">
-      <button class="user save_button"><i class='bx bxs-save'></i>Save</button>
-    </div>
+      <h2>Skills</h2>
+      <hr class="skill">
 
-    <div class="delete-button" onclick="confirmDelete(true)">
-      <i class='bx bxs-eraser' ></i>
-      <p>Delete this <span id="delete-extra-type">User</span></p>
-    </div>
-  </div>
+      <div class="edit-percent">
+        <input type="range" class="skill-percent" min="0" max="100" value="62" block="50">
+        <div class="edit-percent-inner">
+          <div><img src="../../www/assets/skills/black/Fellowship.svg" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p class="percentage-display">0%</p></div>
+        </div>
+      </div>
+      <div class="edit-percent">
+        <input type="range" class="skill-percent" min="0" max="100" value="43" block="45">
+        <div class="edit-percent-inner">
+          <div><img src="../../www/assets/skills/black/Clean Coding.svg" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p class="percentage-display">0%</p></div>
+        </div>
+      </div>
+      <div class="edit-percent">
+        <input type="range" class="skill-percent" min="0" max="100" value="16" block="25">
+        <div class="edit-percent-inner">
+          <div><img src="../../www/assets/skills/black/Consistency.svg" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p class="percentage-display">0%</p></div>
+        </div>
+      </div>
+      <div class="edit-percent">
+        <input type="range" class="skill-percent" min="0" max="100" value="0" block="10">
+        <div class="edit-percent-inner">
+          <div><img src="../../www/assets/skills/black/Cure.svg" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><p class="percentage-display">0%</p></div>
+        </div>
+      </div>
+
+      <div class="save_button_container">
+        <button class="save_button activity"><i class='bx bxs-save'></i>Save</button>
+      </div>
+
+      <div class="delete-button" onclick="confirmDelete(true)">
+          <i class='bx bxs-eraser' ></i>
+          <p>Delete this <span id="delete-extra-type">Activity</span></p>
+        </div>
+      </div>
+
+      <script>
+        let skillPercentInputs = document.querySelectorAll('.skill-percent');
+  
+        function limitMaxValue(input) {
+          
+          input.addEventListener('input', function() {
+            let maxValue = parseInt(this.getAttribute('block'));
+            if (this.value > maxValue) {
+              this.value = maxValue;
+            }
+          });
+        }
       
+        function paintPercentage(input) {
+          let parentDiv = input.closest('.edit-percent');
+          let percentageDisplay = parentDiv.querySelector('.percentage-display');
+  
+          input.addEventListener('input', function() {
+            percentageDisplay.textContent = input.value + '%';
+            let fillPercentage = (input.value / 100) * 100;
+            input.style.background = `linear-gradient(to right, var(--skill-color) 0%, var(--skill-color) ${fillPercentage}%, #ddd ${fillPercentage}%, #ddd 100%)`;
+          });
+          
+        }
+      
+        function paintOnLoading(input) {
+          let parentDiv = input.closest('.edit-percent');
+          let percentageDisplay = parentDiv.querySelector('.percentage-display');
+          percentageDisplay.textContent = input.value + '%';
+          let fillPercentage = (input.value / 100) * 100;
+          input.style.background = `linear-gradient(to right, var(--skill-color) 0%, var(--skill-color) ${fillPercentage}%, #ddd ${fillPercentage}%, #ddd 100%)`;
+        }
+  
+    document.addEventListener('DOMContentLoaded', function() {
+      skillPercentInputs.forEach(function(input) {
+        limitMaxValue(input);
+        paintPercentage(input);
+        paintOnLoading(input);
+      });
+    });
+      </script>
       <!-- ######## FIN TEXTO ######## -->
     </section>
   </body>

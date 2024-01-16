@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../../juan.css" />
+    <link rel="stylesheet" href="../../www/assets/style/style.css" />
   </head>
   <body>
     
@@ -22,7 +22,7 @@
       <div class="actual_user">
         <p id="fullname">Nicolas Kuznetzov</p>
         <img
-          src="../../assets/profilepic.png"
+          src="../../www/assets/pp/default-user-icon.png"
           alt="user_portrait"
           id="portrait"
           onclick="editProfile()"
@@ -79,13 +79,44 @@
       <!-- NAV -->
       <div class="nav">
         <i class='bx bx-undo'></i>
-        <div id="nav-extra"></div>
+        <div id="nav-extra"><i class='bx bxs-save' ></i><p>Save <span id="nav-extra-type">Project</span></p></div>
         <!-- EDIT PROJECT <i class='bx bxs-edit-alt'></i><p>Edit <span id="nav-extra-type">Project</span></p> -->
         <!-- SAVE PROJECT <i class='bx bxs-save' ></i><p>Save <span id="nav-extra-type">Project</span></p> -->
       </div>
 
       <!-- ######## TEXTO AQUI ######## -->
+      <div class="title">
+        <input type="text" placeholder="Project XX">
+      </div>
 
+    <h2>Activities</h2>
+    <hr class="activity">
+
+    <div class="tag activity">
+      <h3>Act 04</h3>
+      <i class='bx bxs-trash-alt' onclick=""></i>
+    </div>
+
+    <div class="tag cactivity">
+      <h3>Act 03</h3>
+      <i class='bx bxs-shield-x' ></i>
+    </div>
+
+    <div class="tag cactivity">
+      <h3>Act 02</h3>
+      <i class='bx bxs-shield-x' ></i>
+    </div>
+
+    <div class="tag cactivity">
+      <h3>Act 01</h3>
+      <i class='bx bxs-shield-x' ></i>
+    </div>
+
+    <div class="delete-button">
+      <i class='bx bxs-eraser' ></i>
+      <p>Delete this <span id="delete-extra-type">Project</span></p>
+    </div>
+  </div>
       <!-- ######## FIN TEXTO ######## -->
     </section>
   </body>

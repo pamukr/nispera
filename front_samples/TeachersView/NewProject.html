@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../juan.css" />
+    <link rel="stylesheet" href="../../www/assets/style/style.css" />
   </head>
   <body>
     
@@ -22,7 +22,7 @@
       <div class="actual_user">
         <p id="fullname">Nicolas Kuznetzov</p>
         <img
-          src="../assets/profilepic.png"
+          src="../../www/assets/pp/default-user-icon.png"
           alt="user_portrait"
           id="portrait"
           onclick="editProfile()"
@@ -75,31 +75,6 @@
       </script>
     <section id="main">
       
-      <!-- DELETE CONFIRM -->
-      <div class="delete-confirm-container">
-        <div class="delete-confirm">
-          <p>Confirm deletion?</p>
-          <div>
-            <button onclick="">Yes</button>
-            <button onclick="confirmDelete(false)">No</button>
-          </div>
-        </div>
-      </div>
-
-      <script>
-        function confirmDelete(show) {
-          let deleteConfirmContainer = document.querySelector(
-            ".delete-confirm-container"
-          );
-          setTimeout(() => {
-            if (show) {
-            deleteConfirmContainer.style.height = "100%";
-          } else {
-            deleteConfirmContainer.style.height = "0px";
-          }
-          }, 300);
-        }
-      </script>
 
       <!-- NAV -->
       <div class="nav">
@@ -110,65 +85,88 @@
       </div>
 
       <!-- ######## TEXTO AQUI ######## -->
-      <div class="title"><input type="text" placeholder="Act XX"></div>
+      <div class="title"><input type="text" placeholder="Project XX"></div>
 
-      <div class="edit-desc">
-        <textarea placeholder="Introduce this activity description..."></textarea>
+      <h2>Students</h2>
+      <hr class="team">
+
+      <div class="tag team">
+        <h3>Add People</h3>
+        <i class='bx bx-plus'></i>
       </div>
 
-      <h2>Skills</h2>
+      <div class="skill-flex-2">
+        <div>
+          <h2>Skills</h2>
+        </div>
+      <div class="showTotalPercent">
+        <p>= <span id="totalPercent"></span>%</p>
+      </div>
+      </div>
       <hr class="skill">
 
+      <div class="tag nskill">
+        <h3>New Skill</h3>
+        <i class='bx bx-plus'></i>
+      </div>
+
       <div class="edit-percent">
-        <input type="range" class="skill-percent" min="0" max="100" value="62" block="50">
+        <input type="range" class="skill-percent" min="0" max="100" value="20">
         <div class="edit-percent-inner">
-          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><img src="../../www/assets/skills/black/Logic.svg" alt="Skill_icon"><p>Nombre Skill</p></div>
           <div><p class="percentage-display">0%</p></div>
         </div>
       </div>
       <div class="edit-percent">
-        <input type="range" class="skill-percent" min="0" max="100" value="43" block="45">
+        <input type="range" class="skill-percent" min="0" max="100" value="15">
         <div class="edit-percent-inner">
-          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><img src="../../www/assets/skills/black/Eloquence.svg" alt="Skill_icon"><p>Nombre Skill</p></div>
           <div><p class="percentage-display">0%</p></div>
         </div>
       </div>
       <div class="edit-percent">
-        <input type="range" class="skill-percent" min="0" max="100" value="16" block="25">
+        <input type="range" class="skill-percent" min="0" max="100" value="25">
         <div class="edit-percent-inner">
-          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><img src="../../www/assets/skills/black/Collaboration.svg" alt="Skill_icon"><p>Nombre Skill</p></div>
           <div><p class="percentage-display">0%</p></div>
         </div>
       </div>
       <div class="edit-percent">
-        <input type="range" class="skill-percent" min="0" max="100" value="0" block="10">
+        <input type="range" class="skill-percent" min="0" max="100" value="5">
         <div class="edit-percent-inner">
-          <div><img src="https://cdn-icons-png.flaticon.com/512/263/263100.png" alt="Skill_icon"><p>Nombre Skill</p></div>
+          <div><img src="../../www/assets/skills/black/Clean Coding.svg" alt="Skill_icon"><p>Nombre Skill</p></div>
           <div><p class="percentage-display">0%</p></div>
         </div>
       </div>
 
       <div class="save_button_container">
-        <button class="save_button activity"><i class='bx bxs-save'></i>Save</button>
+        <button class="save_button project"><i class='bx bxs-save'></i>Save</button>
       </div>
 
-      <div class="delete-button" onclick="confirmDelete(true)">
-          <i class='bx bxs-eraser' ></i>
-          <p>Delete this <span id="delete-extra-type">Activity</span></p>
-        </div>
-      </div>
 
       <script>
         let skillPercentInputs = document.querySelectorAll('.skill-percent');
+      
+        function updateTotalPercent() {
+          let totalPercentDisplay = document.getElementById('totalPercent');
+          let totalPercentage = Array.from(skillPercentInputs).reduce((sum, input) => sum + parseInt(input.value), 0);
+          totalPercentDisplay.textContent = totalPercentage;
+        }
   
         function limitMaxValue(input) {
+          var maxValue = 100;
           
           input.addEventListener('input', function() {
-            let maxValue = parseInt(this.getAttribute('block'));
             if (this.value > maxValue) {
               this.value = maxValue;
             }
+            let totalPercentage = Array.from(skillPercentInputs).reduce((sum, input) => sum + parseInt(input.value), 0);
+            
+            if (totalPercentage > 100) {
+              this.value = this.value - (totalPercentage - 100);
+            }
           });
+          updateTotalPercent()
         }
       
         function paintPercentage(input) {
@@ -179,6 +177,7 @@
             percentageDisplay.textContent = input.value + '%';
             let fillPercentage = (input.value / 100) * 100;
             input.style.background = `linear-gradient(to right, var(--skill-color) 0%, var(--skill-color) ${fillPercentage}%, #ddd ${fillPercentage}%, #ddd 100%)`;
+            updateTotalPercent();
           });
           
         }
