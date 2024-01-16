@@ -196,7 +196,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Home</title>
                         <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                     </head>
 
                     <body>
@@ -311,6 +314,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Home</title>
+                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                     </head>
 
                     <body>
@@ -430,7 +437,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>Create Project</title>
                             <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                         </head>
 
                         <body>
@@ -648,7 +658,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title><?php echo  $projectname; ?></title>
                             <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                         </head>
 
                         <body>
@@ -830,6 +843,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <head>
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                         <title>Edit <?php echo $name; ?></title>
                     </head>
 
@@ -927,6 +944,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Users</title>
+                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                     </head>
 
                     <body>
@@ -1023,6 +1044,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Edit <?php echo $username; ?></title>
+                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                     </head>
 
                     <body>
@@ -1195,7 +1220,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Add People</title>
                         <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                     </head>
 
                     <body>
@@ -1477,7 +1505,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>Add Skill</title>
                     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-                    <link rel="stylesheet" href="assets/style/style.css" />
+                    <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                 </head>
 
                 <body>
@@ -1597,6 +1628,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>Skills</title>
+                    <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                 </head>
 
                 <body>
@@ -1776,6 +1811,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>New Activity</title>
+                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                         </head>
 
                         <body>
@@ -1864,6 +1903,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>Edit <?php echo $name; ?></title>
+                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                         </head>
 
                         <body>
@@ -2102,6 +2145,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title><?php echo $name; ?></title>
+                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                         </head>
 
                         <body>
@@ -2267,6 +2314,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title><?php echo $name; ?> Teams</title>
+                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                         </head>
 
                         <body>
@@ -2388,6 +2439,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>Unteamed students</title>
+                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" />
+                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
                         </head>
 
                         <body>
