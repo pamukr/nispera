@@ -280,7 +280,7 @@ section{
   border-radius: 50%;
   border: 2px solid #ccc;
   cursor: pointer;
-  background-image: url('../pp/default-user-icon.png');
+  background-image: url('assets/pp/default-user-icon.png');
   background-repeat: no-repeat;
   background-position: center;
   z-index: 0;
@@ -408,7 +408,7 @@ section{
   border-radius: 50%;
   border: 1px solid var(--black);
   cursor: pointer;
-  background-image: url('../pp/default-user-icon.png');
+  background-image: url('assets/pp/default-user-icon.png');
   background-repeat: no-repeat;
   background-position: center;
   z-index: 0;
@@ -1604,7 +1604,7 @@ section{
   transform: translateY(-0.075em);
   display: grid;
   place-content: center;
-  background-image: url('../elements/add.png');
+  background-image: url('https://s3-alpha.figma.com/hub/file/2801308781/b0469bdd-0e21-4cda-af53-e2fa007ecaef-cover.png');
   background-size: cover;
   transition: all 0.4s ease;
   filter: brightness(0) invert(1);
@@ -1612,7 +1612,7 @@ section{
 }
 
 .add-people-table input[type="checkbox"]:checked {
-  background-image: url('../elements/check.png');
+  background-image: url('https://cdn.icon-icons.com/icons2/2131/PNG/512/checkmark_apply_check_checked_icon_131551.png');
   rotate: 0deg;
   background-size: cover;
   transition: all 0.4s ease;
