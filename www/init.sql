@@ -106,10 +106,10 @@ CREATE TABLE teams (
 );
 
 CREATE TABLE teammembers (
-    group_id INT,
+    team_id INT,
     user_id INT,
-    PRIMARY KEY (group_id, user_id),
-    FOREIGN KEY (group_id) REFERENCES `groups`(id),
+    PRIMARY KEY (team_id, user_id),
+    FOREIGN KEY (team_id) REFERENCES teams(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -124,16 +124,16 @@ INSERT INTO users (name, surname, role, user, password_hash, email)
 VALUES ('Testing', "Teacher", 'teacher', 'prof', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'profe@nispera.work');
 
 INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing', "Student", 'student', 'test', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student@nispera.work');
+VALUES ('Testing', "Student", 'student', 'test', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student1@nispera.work');
 
 INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing2', "Student", 'student', 'test2', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student@nispera.work');
+VALUES ('Testing2', "Student", 'student', 'test2', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student2@nispera.work');
 
 INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing3', "Student", 'student', 'test3', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student@nispera.work');
+VALUES ('Testing3', "Student", 'student', 'test3', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student3@nispera.work');
 
 INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing4', "Student", 'student', 'test4', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student@nispera.work');
+VALUES ('Testing4', "Student", 'student', 'test4', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student4@nispera.work');
 
 INSERT INTO projects(name, status) VALUES ('Projecte 1', 'open');
 

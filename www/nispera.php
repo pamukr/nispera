@@ -9,6 +9,44 @@ if (!isset($_SESSION)) {
 $domain = "http://localhost:8080/";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    function obtainImage($id)
+    {
+        $path = getcwd() . "/" . "assets/pp/";
+        //Buscamos en la carpeta el archivo que tenga el id del usuario.
+        $files = glob($path . $id . ".*");
+        if (!empty($files)) {
+            // Devolvemos la imagen en formato base64
+            $ext = pathinfo($files[0], PATHINFO_EXTENSION);
+            $data = file_get_contents($files[0]);
+            $base64 = 'data:image/' . $ext . ';base64,' . base64_encode($data);
+            return $base64;
+        } else {
+            // Devolvemos la imagen por defecto en formato base64
+            $data = file_get_contents($path . "default.png");
+            $base64 = 'data:image/png;base64,' . base64_encode($data);
+            return $base64;
+        }
+    }
+
+    if (isset($_POST['changePP'])) {
+        $pp = $_FILES['pp'];
+        $id = $_POST['userid'];
+        if ($_SESSION['role'] === "admin" || $id === $_SESSION['id']) {
+            //Eliminamos la imagen $id.ext de la carpeta assets/pp/
+            $path = getcwd() . "/" . "assets/pp/";
+            //Buscamos en la carpeta el archivo que tenga el id del usuario.
+            $files = glob($path . $id . ".*");
+            if (!empty($files)) {
+                // Eliminamos el archivo
+                unlink($files[0]);
+            }
+            //Creamos una imagen en la carpeta assets/pp/ con $pp
+            $ext = pathinfo($pp['name'], PATHINFO_EXTENSION);
+            $filename = $id . "." . $ext;
+            move_uploaded_file($pp['tmp_name'], $path . $filename);
+        }
+    }
+
     $data = json_decode(file_get_contents("php://input"), true);
     if (isset($data['action'])) {
         $action = $data['action'];
@@ -433,7 +471,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div id="activities">
                                 <?php
                                 //Obtenemos las actividades del proyecto
-                                $result = $conn->query("SELECT id, name, status FROM activities WHERE project_id = '{$_SESSION['current_project']}'");
+                                $result = $conn->query("SELECT id, name, status FROM activities WHERE project_id = '{$_SESSION['current_project']}' ORDER BY id DESC");
                                 //Recorremos las actividades
                                 while ($row = $result->fetch_assoc()) {
                                     $id = $row['id'];
@@ -597,7 +635,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <body>
                         <button onclick="action('main')">back</button>
-                        <button onclick="action('addUser')">New User</button>
+                        <button onclick="action('editUser')">New User</button>
                         <h1>Administrators</h1>
                         <?php
                         $result = $conn->query("SELECT id, name, surname FROM users WHERE role = 'admin'");
@@ -659,15 +697,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             case "editUser":
                 if ($_SESSION['role'] === 'admin') {
-                    $id = $data['id'];
-                    $_SESSION['current_user'] = $id;
-                    $result = $conn->query("SELECT name, surname, user, role, email FROM users WHERE id = '$id'");
-                    $row = $result->fetch_assoc();
-                    $name = $row['name'];
-                    $surname = $row['surname'];
-                    $user = $row['user'];
-                    $role = $row['role'];
-                    $email = $row['email'];
+                    if (isset($data['id'])) {
+                        $id = $data['id'];
+                        $_SESSION['current_user'] = $id;
+                        $result = $conn->query("SELECT name, surname, user, role, email FROM users WHERE id = '$id'");
+                        $row = $result->fetch_assoc();
+                        $name = $row['name'];
+                        $surname = $row['surname'];
+                        $user = $row['user'];
+                        $role = $row['role'];
+                        $email = $row['email'];
+                    } else {
+                        //Obtenemos cuantos usuarios hay y le sumamos uno
+                        $result = $conn->query("SELECT COUNT(id) FROM users");
+                        $row = $result->fetch_assoc();
+                        $id = $row['COUNT(id)'] + 1;
+                        $name = "";
+                        $surname = "";
+                        $user = "";
+                        $role = "";
+                        $email = "";
+                    }
+
                 ?>
                     <!DOCTYPE html>
                     <html lang="en">
@@ -675,18 +726,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <head>
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Edit User <?php echo $username; ?></title>
+                        <title>Edit <?php echo $username; ?></title>
                     </head>
 
                     <body>
                         <button onclick="action('goUsers')">back</button>
-                        <input type="file" id="pp">
+                        <img src=<?php echo '"' . obtainImage($id) . '"'; ?> alt="profile picture" width="50px" height="50px">
+                        <input onchange=<?php echo "\"changePP($id)\""; ?> type="file" id="pp">
                         <input type="text" id="name" placeholder="name" value=<?php echo '"' . $name . '"'; ?>>
                         <input type="text" id="surname" placeholder="surname" value=<?php echo '"' . $surname . '"'; ?>>
                         <br>
                         <input type="mail" id="email" placeholder="email" value=<?php echo '"' . $email . '"'; ?>>
                         <input type="text" id="user" placeholder="user" value=<?php echo '"' . $user . '"'; ?>>
-                        <input type="text" id="role" placeholder="role" value=<?php echo '"' . $role . '"'; ?>>
+                        <select id="role">
+                            <option value="student" <?php if ($role === 'student') echo 'selected'; ?>>Student</option>
+                            <option value="teacher" <?php if ($role === 'teacher') echo 'selected'; ?>>Teacher</option>
+                        </select>
                         <?php
                         //Obtenemos todos los grupos de los que el usuario es groupmember
                         $result = $conn->query("SELECT group_id FROM groupmembers WHERE user_id = '$id'");
@@ -697,6 +752,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $row2 = $result2->fetch_assoc();
                             $groups .= $row2['name'] . ",";
                         }
+                        //Si el 
                         //Quitamos la ultima coma
                         $groups = substr($groups, 0, -1);
                         //Ponemos el input groups
@@ -713,7 +769,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             let role = document.getElementById("role").value;
                             let email = document.getElementById("email").value;
                             let groups = document.getElementById("groups").value;
-                            let pp = document.getElementById("pp").files[0];
                             fetchNispera({
                                 name: "action",
                                 value: "saveUser"
@@ -735,13 +790,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             }, {
                                 name: "groups",
                                 value: groups
-                            }, {
-                                name: "pp",
-                                value: pp
                             }).then(response => {
                                 console.log(response);
-                                action("goUsers");
+                                if (response == "true") {
+                                    action("goUsers");
+                                }
                             });
+                        }
+
+                        function changePP(id) {
+                            //Creamos un form y ponemos la imagen
+                            let pp = document.getElementById("pp").files[0];
+                            let data = new FormData();
+                            data.append('pp', pp);
+                            data.append('changePP', 'true');
+                            data.append('userid', id);
+                            fetch('nispera.php', {
+                                    method: 'POST',
+                                    body: data
+                                })
+                                .then(response => response.text())
+                                .then(content => {
+                                    console.log(content);
+                                });
                         }
                     </script>
 
@@ -757,37 +828,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $role = $data['role'];
                     $email = $data['email'];
                     $groups = $data['groups'];
-                    $pp = $data['pp'];
 
-                    if ($_SESSION['current_user'] = "") {
-                        $conn->query("INSERT INTO users (id,name,surname,user,role,email) VALUES ('$id','$name','$surname','$user','$role','$email')");
+                    //Revisamos que ningun campo esté vacio a parte del de groups
+                    if ($name === "" || $surname === "" || $user === "" || $role === "" || $email === "") {
+                        echo "Empty fields";
                     } else {
-                        $conn->query("UPDATE users SET name = '$name', surname = '$surname', user = '$user', role = '$role', email = '$email' WHERE id = '{$_SESSION['current_user']}'");
-                    }
-                    //Si el usuario no tiene foto de perfil, le ponemos una por defecto
-                    $result = $conn->query("SELECT COUNT(*) AS count FROM user_images WHERE user_id = '$id'");
-                    $row = $result->fetch_assoc();
-                    $count = $row['count'];
-                    if ($count == 0) {
-                        $conn->query("INSERT INTO user_images (user_id,src) VALUES ('$id','default.png')");
-                    }
-                    //Si el usuario tiene una foto de perfil, la actualizamos
-                    if ($pp != "") {
-                        $conn->query("UPDATE user_images SET src = '$pp' WHERE user_id = '$id'");
-                    }
-                    //Si el usuario tiene grupos, los actualizamos
-                    if ($groups != "") {
-                        //Separamos los grupos en un array
-                        $groups = explode(",", $groups);
-                        //Recorremos el array
-                        foreach ($groups as $group) {
-                            //Obtenemos el id del grupo
-                            $result = $conn->query("SELECT id FROM `groups` WHERE name = '$group'");
-                            $row = $result->fetch_assoc();
+                        //Revisamos que el usuario y el correo no existan ya, dejando a parte el propio usuario.
+                        $result = $conn->query("SELECT COUNT(*) AS count FROM users WHERE (user = '$user' OR email = '$email' OR (name = '$name' AND surname = '$surname')) AND id != '{$_SESSION['current_user']}'");
+                        $row = $result->fetch_assoc();
+                        $count = $row['count'];
+                        if ($count == 0) {
+                            echo "true";
+                            if ($_SESSION['current_user'] == "") {
+                                $conn->query("INSERT INTO users (name,surname,user,role,email,password_hash) VALUES ('$name','$surname','$user','$role','$email','e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')");
+                                $id = $conn->insert_id;
+
+                                //Por cada grupo que haya en $groups, añadimos al usuario a ese grupo
+                                $groups = explode(",", $groups);
+                                foreach ($groups as $group) {
+                                    //Miramos si existe un grupo con ese nombre
+                                    $result = $conn->query("SELECT id FROM `groups` WHERE name = '$group'");
+                                    if ($result->num_rows === 0) {
+                                        //Si no existe, lo creamos
+                                        $conn->query("INSERT INTO `groups` (name) VALUES ('$group')");
+                                        $groupid = $conn->insert_id;
+                                    } else {
+                                        //Si existe, obtenemos su id
+                                        $row = $result->fetch_assoc();
+                                        $groupid = $row['id'];
+                                    }
+                                    //Añadimos al usuario en el grupo
+                                    $conn->query("INSERT INTO groupmembers (user_id,group_id) VALUES ('$id','$groupid')");
+                                }
+                            } else {
+                                //Actualizamos el usuario
+                                $conn->query("UPDATE users SET name = '$name', surname = '$surname', user = '$user', role = '$role', email = '$email' WHERE id = '{$_SESSION['current_user']}'");
+
+                                //Eliminamos todos los grupos del usuario
+                                $conn->query("DELETE FROM groupmembers WHERE user_id = '{$_SESSION['current_user']}'");
+                                //Por cada grupo que haya en $groups, añadimos al usuario a ese grupo
+                                $groups = explode(",", $groups);
+                                foreach ($groups as $group) {
+                                    //Miramos si existe un grupo con ese nombre
+                                    $result = $conn->query("SELECT id FROM `groups` WHERE name = '$group'");
+                                    if ($result->num_rows === 0) {
+                                        //Si no existe, lo creamos
+                                        $conn->query("INSERT INTO `groups` (name) VALUES ('$group')");
+                                        $groupid = $conn->insert_id;
+                                    } else {
+                                        //Si existe, obtenemos su id
+                                        $row = $result->fetch_assoc();
+                                        $groupid = $row['id'];
+                                    }
+                                    //Añadimos al usuario en el grupo
+                                    $conn->query("INSERT INTO groupmembers (user_id,group_id) VALUES ('{$_SESSION['current_user']}','$groupid')");
+                                }
+                            }
                         }
                     }
                 }
-
                 break;
             case "addPeople":
                 if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
@@ -1332,7 +1431,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     value: skillList
                                 }).then(response => {
                                     console.log(response);
-                                    action("goProject");
+                                    action("goActivity");
                                 });
                             }
                         </script>
@@ -1531,14 +1630,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 ?>
                             </div>
                             <h2>Teams</h2>
-                            <button onclick="">Teams</button>
+                            <button onclick="action('goTeams')">Teams</button>
                             <div id="teams">
-
+                                <?php
+                                //Obtenemos los equipos de la actividad
+                                $result = $conn->query("SELECT id, name FROM teams WHERE activity_id = '{$_SESSION['current_activity']}'");
+                                //Recorremos los equipos
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    //Obtenemos los miembros del equipo
+                                    $result2 = $conn->query("SELECT user_id FROM teammembers WHERE team_id = '$id'");
+                                    //Recorremos los miembros
+                                    $members = [];
+                                    while ($row2 = $result2->fetch_assoc()) {
+                                        $userid = $row2['user_id'];
+                                        //Obtenemos el nombre del usuario
+                                        $result3 = $conn->query("SELECT name, surname FROM users WHERE id = '$userid'");
+                                        $row3 = $result3->fetch_assoc();
+                                        $name2 = $row3['name'];
+                                        $surname = $row3['surname'];
+                                        array_push($members, (object) array('id' => $userid, 'name' => $name2, 'surname' => $surname));
+                                    }
+                                    //Obtenemos el número de miembros
+                                    $members_count = count($members);
+                                    //Si no hay miembros, borramos el team
+                                    if ($members_count == 0) {
+                                        $conn->query("DELETE FROM teams WHERE id = '$id'");
+                                    } else {
+                                        //Imprimimos el team
+                                        echo "<div>";
+                                        echo "<h3>$name</h3>";
+                                        echo "<p>#$members_count members</p>";
+                                        echo "<div class='members'>";
+                                        foreach ($members as $member) {
+                                            //Obtenemos la imagen del miembro a partir de su id y la función obtainImage
+                                            echo "<img width='50px' height='50px' src='" . obtainImage($member->id) . "' alt=''>";
+                                            echo "<p>$member->name $member->surname</p>";
+                                        }
+                                    }
+                                }
+                                ?>
                             </div>
                         </body>
 
                         </html>
-<?php
+                    <?php
                     }
                 }
                 break;
@@ -1561,6 +1698,233 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 $conn->query("DELETE FROM activities WHERE id = '{$data['id']}'");
                             }
                         }
+                    }
+                }
+                break;
+            case "goTeams":
+                if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+                    if ($_SESSION['current_activity'] != "") {
+                        //Obtenemos el nombre de la actividad
+                        $result = $conn->query("SELECT name FROM activities WHERE id = '{$_SESSION['current_activity']}'");
+                        $row = $result->fetch_assoc();
+                        $name = $row['name'];
+                    ?>
+                        <!DOCTYPE html>
+                        <html lang="en">
+
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title><?php echo $name; ?> Teams</title>
+                        </head>
+
+                        <body>
+                            <button onclick="action('goActivity')">back</button>
+                            <button onclick="vaction('createTeam');action('goTeams')">Create Team</button>
+                            <div id="teams">
+                                <?php
+                                //Obtenemos todos los teams que hay en la actividad
+                                $result = $conn->query("SELECT id, name FROM teams WHERE activity_id = '{$_SESSION['current_activity']}'");
+                                //Recorremos los teams
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    //Obtenemos los miembros del team
+                                    $result2 = $conn->query("SELECT user_id FROM teammembers WHERE team_id = '$id'");
+                                    //Recorremos los miembros
+                                    $members = [];
+                                    while ($row2 = $result2->fetch_assoc()) {
+                                        $userid = $row2['user_id'];
+                                        //Obtenemos el nombre del usuario
+                                        $result3 = $conn->query("SELECT name, surname FROM users WHERE id = '$userid'");
+                                        $row3 = $result3->fetch_assoc();
+                                        $name2 = $row3['name'];
+                                        $surname = $row3['surname'];
+                                        array_push($members, (object) array('id' => $userid, 'name' => $name2, 'surname' => $surname));
+                                    }
+                                    //Obtenemos el número de miembros
+                                    $members_count = count($members);
+                                    //Imprimimos el team
+                                    echo "<div>";
+                                    echo "<input type='text' value='$name' onchange='teamName($id,this.value)'>";
+                                    echo "<p>#$members_count members</p>";
+                                    echo "<div class='members'>";
+                                    foreach ($members as $member) {
+                                        //Obtenemos la imagen del miembro a partir de su id y la función obtainImage
+                                        echo "<img height='50px' width='50px' src='" . obtainImage($member->id) . "' alt=''>";
+                                        echo "<p>$member->name $member->surname</p>";
+                                        echo "<button onclick='deleteMember(\"$id\",\"$member->id\")'>Delete</button>";
+                                    }
+                                    echo "<button onclick='addMember(\"$id\")'>+</button>";
+                                    echo "</div>";
+                                    echo "</div>";
+                                }
+                                ?>
+                            </div>
+                            <div id="unteamed">
+
+                            </div>
+                        </body>
+                        <?php include_once "scripts.php"; ?>
+                        <script>
+                            function addMember(teamid) {
+                                fetchNispera({
+                                    name: "action",
+                                    value: "addMember"
+                                }, {
+                                    name: "teamid",
+                                    value: teamid
+                                }).then(response => {
+                                    document.open();
+                                    document.write(response);
+                                    document.close();
+                                });
+                            };
+
+                            function deleteMember(teamid, userid) {
+                                fetchNispera({
+                                    name: "action",
+                                    value: "deleteMember"
+                                }, {
+                                    name: "teamid",
+                                    value: teamid
+                                }, {
+                                    name: "userid",
+                                    value: userid
+                                });
+                                action("goTeams");
+                            };
+
+                            function teamName(teamid, name) {
+                                fetchNispera({
+                                    name: "action",
+                                    value: "teamName"
+                                }, {
+                                    name: "teamid",
+                                    value: teamid
+                                }, {
+                                    name: "name",
+                                    value: name
+                                });
+                            };
+                        </script>
+
+                        </html>
+                    <?php
+                    }
+                }
+                break;
+            case "createTeam":
+                //Si el usuario es admin o teacher
+                if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+                    if ($_SESSION['current_activity'] != "") {
+                        //Creamos un nuevo team con el nombre "Unnamed Team"
+                        $conn->query("INSERT INTO teams (name,activity_id) VALUES ('Unnamed Team','{$_SESSION['current_activity']}')");
+                    }
+                }
+                break;
+            case "addMember":
+                //Si el usuario es admin o teacher
+                if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+                    if ($_SESSION['current_activity'] != "") {
+                        //Obtenemos el id del team
+                        $teamid = $data['teamid'];
+                    ?>
+                        <!DOCTYPE html>
+                        <html lang="en">
+
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Unteamed students</title>
+                        </head>
+
+                        <body>
+                            <button onclick="action('goTeams')">back</button>
+                            <h1>Students without team</h1>
+                            <?php
+                            //Obtenemos los miembros del proyecto que no están en ningun team de la actividad current_activity y que sean students
+                            $result = $conn->query("SELECT id, name, surname FROM users WHERE id IN (SELECT user_id FROM project_users WHERE project_id = '{$_SESSION['current_project']}') AND id NOT IN (SELECT user_id FROM teammembers WHERE team_id IN (SELECT id FROM teams WHERE activity_id = '{$_SESSION['current_activity']}')) AND role = 'student'");
+                            //Recorremos los miembros
+                            while ($row = $result->fetch_assoc()) {
+                                $id = $row['id'];
+                                $name = $row['name'];
+                                $surname = $row['surname'];
+                                //Imprimimos el miembro
+                                echo "<div onclick='addtoTeam(\"$teamid\",\"$id\")'>";
+                                echo "<img height='50px' width='50px' src='" . obtainImage($id) . "' alt=''>";
+                                echo "<p>$name $surname</p>";
+                                echo "</div>";
+                            }
+                            ?>
+
+                        </body>
+                        <?php include_once "scripts.php"; ?>
+                        <script>
+                            function addtoTeam(teamid, userid) {
+                                fetchNispera({
+                                    name: "action",
+                                    value: "addtoTeam"
+                                }, {
+                                    name: "teamid",
+                                    value: teamid
+                                }, {
+                                    name: "userid",
+                                    value: userid
+                                }).then(response => {
+                                    console.log(response);
+                                    action("goTeams");
+                                });
+                            };
+                        </script>
+
+                        </html>
+<?php
+                    }
+                }
+                break;
+            case "addtoTeam":
+                //Si el usuario es admin o teacher
+                if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+                    if ($_SESSION['current_activity'] != "") {
+                        //Obtenemos el id del team
+                        $teamid = $data['teamid'];
+                        //Obtenemos el id del usuario
+                        $userid = $data['userid'];
+                        //Observamos si el usuario está ya en un team de la actividad y que sea student
+                        $result = $conn->query("SELECT COUNT(*) AS count FROM teammembers WHERE user_id = '$userid' AND team_id IN (SELECT id FROM teams WHERE activity_id = '{$_SESSION['current_activity']}')");
+                        $row = $result->fetch_assoc();
+                        $count = $row['count'];
+                        if ($count == 0) {
+                            //Añadimos el usuario al team
+                            $conn->query("INSERT INTO teammembers (team_id,user_id) VALUES ('$teamid','$userid')");
+                        }
+                    }
+                }
+                break;
+            case "deleteMember":
+                //Si el usuario es admin o teacher
+                if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+                    if ($_SESSION['current_activity'] != "") {
+                        //Obtenemos el id del team
+                        $teamid = $data['teamid'];
+                        //Obtenemos el id del usuario
+                        $userid = $data['userid'];
+                        //Borramos el usuario del team
+                        $conn->query("DELETE FROM teammembers WHERE team_id = '$teamid' AND user_id = '$userid'");
+                    }
+                }
+                break;
+            case "teamName":
+                //Si el usuario es admin o teacher
+                if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+                    if ($_SESSION['current_activity'] != "") {
+                        //Obtenemos el id del team
+                        $teamid = $data['teamid'];
+                        //Obtenemos el nombre del team
+                        $name = $data['name'];
+                        //Actualizamos el nombre del team
+                        $conn->query("UPDATE teams SET name = '$name' WHERE id = '$teamid'");
                     }
                 }
                 break;
