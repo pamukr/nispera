@@ -119,32 +119,48 @@ CREATE TABLE teammembers (
 INSERT INTO users (name, surname, role, user, password_hash, email)
 VALUES ('Nispera', NULL, 'admin', 'nispera', '2e5eafa70dcac9ee2ad984b319530890404ec303b0e93d37ad6852ff41b32285', 'admin@nispera.work');
 
--- Usuario teacher hardcodeado
+-- Gente de DAW2
 INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing', "Teacher", 'teacher', 'prof', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'profe@nispera.work');
-
-INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing', "Student", 'student', 'test', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student1@nispera.work');
+VALUES ('Marcos', "Venteo", 'teacher', 'marcos', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'marcos@nispera.work');
 
 INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing2', "Student", 'student', 'test2', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student2@nispera.work');
+VALUES ('Alex', "Marin", 'teacher', 'amarin', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'alex@nispera.work');
 
 INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing3', "Student", 'student', 'test3', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student3@nispera.work');
+VALUES ('Guillem', "Torres", 'student', 'gurex', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'gurex@nispera.work');
 
 INSERT INTO users (name, surname, role, user, password_hash, email)
-VALUES ('Testing4', "Student", 'student', 'test4', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'student4@nispera.work');
+VALUES ('Pau', "Murcia", 'student', 'tumse', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'tumse@nispera.work');
 
-INSERT INTO projects(name, status) VALUES ('Projecte 1', 'open');
+INSERT INTO users (name, surname, role, user, password_hash, email)
+VALUES ('Marc', "Zaragoza", 'student', 'mazapan', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'mazapan@nispera.work');
 
-INSERT INTO project_users (project_id, user_id) VALUES (1, 1);
-INSERT INTO project_users (project_id, user_id) VALUES (1, 3);
+INSERT INTO users (name, surname, role, user, password_hash, email)
+VALUES ('Miguel', "Gallardo", 'student', 'chimpy', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'chimpy@nispera.work');
+
+-- Gente de ASIX2
+INSERT INTO users (name, surname, role, user, password_hash, email)
+VALUES ('Sergi', "Andres", 'teacher', 'sand', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'sand@nispera.work');
+
+INSERT INTO users (name, surname, role, user, password_hash, email)
+VALUES ('Raúl', "Dearriba", 'teacher', 'raul', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'segma@nispera.work');
+
+INSERT INTO users (name, surname, role, user, password_hash, email)
+VALUES ('Iván', "Mariscal", 'student', 'spartan', '16b517295f23b7c61cdce9797c435e53db985e17120c1a6c2eeed18e017f95e5', 'spartan@nispera.work');
 
 INSERT INTO `groups` (name) VALUES ('DAW2');
 INSERT INTO `groups` (name) VALUES ('ASIX2');
-INSERT INTO groupmembers (group_id, user_id) VALUES (1, 1); 
-INSERT INTO groupmembers (group_id, user_id) VALUES (1, 2); 
-INSERT INTO groupmembers (group_id, user_id) VALUES (2, 2); 
+
+INSERT INTO groupmembers (group_id, user_id) VALUES (1, 1);
+INSERT INTO groupmembers (group_id, user_id) VALUES (2, 1);
+INSERT INTO groupmembers (group_id, user_id) VALUES (1, 2);
 INSERT INTO groupmembers (group_id, user_id) VALUES (1, 3);
-INSERT INTO groupmembers (group_id, user_id) VALUES (2, 5);
+INSERT INTO groupmembers (group_id, user_id) VALUES (1, 4);
+INSERT INTO groupmembers (group_id, user_id) VALUES (1, 5);
 INSERT INTO groupmembers (group_id, user_id) VALUES (1, 6);
+INSERT INTO groupmembers (group_id, user_id) VALUES (1, 7);
+INSERT INTO groupmembers (group_id, user_id) VALUES (1, 8);
+INSERT INTO groupmembers (group_id, user_id) VALUES (2, 8);
+INSERT INTO groupmembers (group_id, user_id) VALUES (2, 9);
+INSERT INTO groupmembers (group_id, user_id) VALUES (2, 10);
+

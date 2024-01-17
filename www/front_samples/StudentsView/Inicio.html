@@ -1,54 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-      rel="stylesheet"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="../../www/assets/style/style.css" />
-  </head>
-  <body>
-    
-    <header>
-      <div class="logo"><span>Education</span></div>
-      <div class="actual_user">
-        <p id="fullname">Nicolas Kuznetzov</p>
-        <img
-          src="../../www/assets/pp/default-user-icon.png"
-          alt="user_portrait"
-          id="portrait"
-          onclick="editProfile()"
-        />
-      </div>
-    </header>
-    <div class="edit-profile height-0" id="edit-profile">
-        <div class="nav">
-          <i class='bx bx-undo' onclick="editProfile()"></i>
-          <div id="nav-extra"><button onclick="logOut()">Log Out</button></div>
-        </div>
-        <div><input type="file" id="portrait" onchange="updateImgPreview(this)"><label for="portrait" ></label></div>
-        <div><p id="user-name">Name</p></div>
-        <div><p id="user-surname">Surname Surname</p></div>
-        <div><i class='bx bxs-envelope' ></i><p id="user-email">example@example.com</p></div>
-        <div><i class='bx bxs-user' ></i><p id="user-username">nasusu</p></div>
-        <h3>Change Password</h3>
-        <hr class="user">
-        <div><i class='bx bxs-lock' ></i><input type="password" id="user-current-password" placeholder="Introduce your current password"></div>
-        <div><i class='bx bxs-key' ></i><input type="password" id="user-new-password" placeholder="Introduce your new password"></div>
-        <div class="save_button_container">
-          <button class="user save_button"><i class='bx bxs-save'></i>Save</button>
-          </div>
-      </div>
-      <script>
-        function editProfile() {
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../../www/assets/style/style.css" />
+</head>
+
+<body>
+
+  <header>
+    <div class="logo"><span>Education</span></div>
+    <div class="actual_user">
+      <p id="fullname">Nicolas Kuznetzov</p>
+      <img src="../../www/assets/pp/default-user-icon.png" alt="user_portrait" id="portrait" onclick="editProfile()" />
+    </div>
+  </header>
+  <div class="edit-profile height-0" id="edit-profile">
+    <div class="nav">
+      <i class='bx bx-undo' onclick="editProfile()"></i>
+      <div id="nav-extra"><button onclick="logOut()">Log Out</button></div>
+    </div>
+    <div><input type="file" id="portrait" onchange="updateImgPreview(this)"><label for="portrait"></label></div>
+    <div>
+      <p id="user-name">Name</p>
+    </div>
+    <div>
+      <p id="user-surname">Surname Surname</p>
+    </div>
+    <div><i class='bx bxs-envelope'></i>
+      <p id="user-email">example@example.com</p>
+    </div>
+    <div><i class='bx bxs-user'></i>
+      <p id="user-username">nasusu</p>
+    </div>
+    <h3>Change Password</h3>
+    <hr class="user">
+    <div><i class='bx bxs-lock'></i><input type="password" id="user-current-password"
+        placeholder="Introduce your current password"></div>
+    <div><i class='bx bxs-key'></i><input type="password" id="user-new-password"
+        placeholder="Introduce your new password"></div>
+    <div class="save_button_container">
+      <button class="user save_button"><i class='bx bxs-save'></i>Save</button>
+    </div>
+  </div>
+  <script>
+    function editProfile() {
       let profileDiv = document.getElementById("edit-profile");
       let hrElement = profileDiv.querySelector("hr.user");
 
@@ -59,65 +62,70 @@
         profileDiv.classList.add("height-0");
         hrElement.style.display = "none";
       }
+    }
+
+    function updateImgPreview(input) {
+      let label = input.nextElementSibling;
+
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          label.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        reader.readAsDataURL(input.files[0]);
       }
-      
-      function updateImgPreview(input) {
-  let label = input.nextElementSibling;
+    }
+  </script>
+  <section id="main">
 
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      label.style.backgroundImage = `url('${e.target.result}')`;
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-}
-      </script>
-    <section id="main">
-      
 
-      <!-- NAV -->
-      <div class="nav">
-        <i class='bx bx-undo'></i>
-        <div id="nav-extra"></div>
-        <!-- EDIT PROJECT <i class='bx bxs-edit-alt'></i><p>Edit <span id="nav-extra-type">Project</span></p> -->
-        <!-- SAVE PROJECT <i class='bx bxs-save' ></i><p>Save <span id="nav-extra-type">Project</span></p> -->
-      </div>
+    <!-- NAV -->
+    <div class="nav">
+      <i class='bx bx-undo'></i>
+      <div id="nav-extra"></div>
+      <!-- EDIT PROJECT <i class='bx bxs-edit-alt'></i><p>Edit <span id="nav-extra-type">Project</span></p> -->
+      <!-- SAVE PROJECT <i class='bx bxs-save' ></i><p>Save <span id="nav-extra-type">Project</span></p> -->
+    </div>
 
-      <!-- ######## TEXTO AQUI ######## -->
-      <h2>Active Projects</h2>
-  <hr class="project">
+    <!-- ######## TEXTO AQUI ######## -->
+    <h2>Active Projects</h2>
+    <hr class="project">
 
-  <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
-    <h3>Project 04</h3>
-    <i class='bx bx-chevrons-right'></i>
-  </div>
+    <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)"
+      ontouchstart="handleStart(this)">
+      <h3>Project 04</h3>
+      <i class='bx bx-chevrons-right'></i>
+    </div>
 
-  <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
-    <h3>Project 03</h3>
-    <i class='bx bx-chevrons-right'></i>
-  </div>
+    <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)"
+      ontouchstart="handleStart(this)">
+      <h3>Project 03</h3>
+      <i class='bx bx-chevrons-right'></i>
+    </div>
 
-  <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
-    <h3>Project 02</h3>
-    <i class='bx bx-chevrons-right'></i>
-  </div>
+    <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)"
+      ontouchstart="handleStart(this)">
+      <h3>Project 02</h3>
+      <i class='bx bx-chevrons-right'></i>
+    </div>
 
-  <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
-    <h3>Project 01</h3>
-    <i class='bx bx-chevrons-right'></i>
-  </div>
+    <div class="scroll_tag project" onclick="handleClick(this)" onmousedown="handleStart(this)"
+      ontouchstart="handleStart(this)">
+      <h3>Project 01</h3>
+      <i class='bx bx-chevrons-right'></i>
+    </div>
 
-  <h2>Your Grades</h2>
-  <hr class="grade">
+    <h2>Your Grades</h2>
+    <hr class="grade">
 
-  <div class="scroll_tag grade" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)">
-    <h3>Overall</h3>
-    <i class='bx bx-chevrons-right'></i>
-  </div>
+    <div class="scroll_tag grade" onclick="handleClick(this)" onmousedown="handleStart(this)"
+      ontouchstart="handleStart(this)">
+      <h3>Overall</h3>
+      <i class='bx bx-chevrons-right'></i>
+    </div>
 
-  <script>
-    const screenWidth =
+    <script>
+      const screenWidth =
         window.innerWidth ||
         document.documentElement.clientWidth ||
         document.body.clientWidth;
@@ -176,7 +184,7 @@
                 setTimeout(() => {
                   document.getElementById("main").style.display = "none";
                 }, 400);
-                if(done){
+                if (done) {
                   console.log("HAS ENTRADO!");
                   done = false;
                 }
@@ -188,8 +196,9 @@
           }
         }
       }
-  </script>
-      <!-- ######## FIN TEXTO ######## -->
-    </section>
-  </body>
+    </script>
+    <!-- ######## FIN TEXTO ######## -->
+  </section>
+</body>
+
 </html>

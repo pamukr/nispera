@@ -52,13 +52,16 @@
     function editProfile() {
         let profileDiv = document.getElementById("edit-profile");
         let hrElement = profileDiv.querySelector("hr.user");
+        let main = document.getElementById("main");
 
         if (profileDiv.classList.contains("height-0")) {
             hrElement.style.display = "block";
             profileDiv.classList.remove("height-0");
+            main.style.display = "none";
         } else {
             profileDiv.classList.add("height-0");
             hrElement.style.display = "none";
+            main.style.display = "block";
         }
     }
 

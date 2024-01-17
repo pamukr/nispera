@@ -59,14 +59,30 @@ function handleMove(event) {
                     var id = draggedElement.getAttribute("id");
                     setTimeout(() => {
                         if (done) {
-                            if (doaction == "goProject") {
-                                goProject(id);
-                            }
-                            if (doaction == "goSkills") {
-                                action("goSkills");
-                            }
-                            if (doaction == "goAct") {
-                                goActivity(id);
+                            switch (doaction) {
+                                case "goProject":
+                                    goProject(id);
+                                    break;
+                                case "goSkills":
+                                    action("goSkills");
+                                    break;
+                                case "goAct":
+                                    goActivity(id);
+                                    break;
+                                case "goTeams":
+                                    action("goTeams");
+                                    break;
+                                case "goUsers":
+                                    action("goUsers");
+                                    break;
+                                case "goOverall":
+                                    action("goOverall");
+                                    break;
+                                case "goLeaderboard":
+                                    action("goLeaderboard");
+                                    break;
+                                default:
+                                    break;
                             }
                             done = false;
                         }

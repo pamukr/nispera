@@ -236,6 +236,10 @@ section{
   overflow-x: hidden;
 }
 
+.space{
+  height: 80px;
+}
+
 .edit-profile{
   position: absolute;
   height: 0px;
@@ -408,7 +412,6 @@ section{
   border-radius: 50%;
   border: 1px solid var(--black);
   cursor: pointer;
-  background-image: url('../pp/default-user-icon.png');
   background-repeat: no-repeat;
   background-position: center;
   z-index: 0;
@@ -462,6 +465,12 @@ section{
 
 .edit-user-profile-additional div p{
   font-size: var(--h2);
+}
+
+.edit-user-profile-additional div input{
+  width: 60vw;
+  font-size: var(--h2);
+  background-color: var(--transparent);
 }
 
 .edit-user-profile-additional div select{
@@ -582,13 +591,12 @@ section{
   cursor: pointer;
   text-decoration: none;
   margin-top: 30px;
-  padding: 10px;
+  padding: 30px;
   transition: all 0.5s ease;
 }
 
 .delete-button:hover p{
   text-decoration: underline;
-  transition: all 0.5s ease;
 }
 
 .delete-button p{
@@ -898,7 +906,6 @@ section{
   z-index: 2;
   height: 55px;
   background-color: var(--grade-color);
-  width: 55%;
 }
 
 #max-grades-display{
@@ -906,7 +913,6 @@ section{
   z-index: 1;
   height: 55px;
   border-right: 1px solid var(--delete-icon-color);
-  width: 63%;
 }
 
 .group-tags-container{
@@ -1626,6 +1632,12 @@ section{
   font-size: var(--h2);
 }
 
+.teams-table input{
+  background-color: var(--transparent);
+  width: 80vw;
+  font-size: var(--h2);
+}
+
 .teams-table p:last-of-type{
   width: 10vw;
   font-size: var(--h2);
@@ -1743,12 +1755,8 @@ section{
   background-color: var(--completed-activity-color);
 }
 
-.team:nth-child(even){
+.team{
   background-color: var(--team-color);
-}
-
-.team:nth-child(odd) {
-  background-color: var(--team-2-color);
 }
 
 .team-2 {

@@ -47,11 +47,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <hr class="user">
             <div><i class='bx bxs-lock'></i><input type="password" id="user-current-password" placeholder="Introduce your current password"></div>
             <div><i class='bx bxs-key'></i><input type="password" id="user-new-password" placeholder="Introduce your new password"></div>
-            <div class="save_button_container">
-                <button onclick="changePassword()" class="user save_button"><i class='bx bxs-save'></i>Save</button>
+            <div class="save_button_container" style="padding-bottom: 80px;">
+                <button onclick="changePassword()" class="user save_button"><i class='bx bxs-save'></i>Change password</button>
             </div>
         </div>
         <?php
+    }
+
+
+    function maxMark($idprojecte)
+    {
+        global $conn;
+
+        $project_mark = 0;
+        //Recorremos las skills del proyecto y obtenemos su id y su porcentage
+        $result = $conn->query("SELECT skill_id, percentage FROM project_skills WHERE project_id = '$idprojecte'");
+        while ($row = $result->fetch_assoc()) {
+            $project_skill_id = $row['skill_id'];
+            $project_skill_percentage = $row['percentage'];
+            //Recorremos las actividades con el id del proyecto y el status closed
+            $skill_mark = 0;
+            $result2 = $conn->query("SELECT id FROM activities WHERE project_id = '$idprojecte' AND status = 'close'");
+            while ($row2 = $result2->fetch_assoc()) {
+                $activityid = $row2['id'];
+                //Miramos si la actividad tiene esa skill
+                $result3 = $conn->query("SELECT id, percentage FROM act_skills WHERE activity_id = '$activityid' AND skill_id = '$project_skill_id'");
+                if ($result3->num_rows > 0) {
+                    $act_skill_percentage = $result3->fetch_assoc()['percentage'];
+                    //Obtenemos la mark del $userid en esa act_skill
+                    $skill_mark += $act_skill_percentage / 10;
+                }
+            }
+            //Calculamos la nota de la skill
+            $project_mark += $skill_mark * $project_skill_percentage / 100;
+        }
+        echo $project_mark;
+    }
+
+
+    function studentMark($idusuario, $idproyecto)
+    {
+        global $conn;
+
+        $project_mark = 0;
+
+        // Obtener las habilidades del proyecto y sus porcentajes
+        $result = $conn->query("SELECT skill_id, percentage FROM project_skills WHERE project_id = '$idproyecto'");
+
+        while ($row = $result->fetch_assoc()) {
+            $project_skill_id = $row['skill_id'];
+            $project_skill_percentage = $row['percentage'];
+
+            // Inicializar la variable para la nota de la habilidad
+            $skill_mark = 0;
+
+            // Obtener las actividades cerradas del proyecto que tienen esa habilidad
+            $result2 = $conn->query("SELECT a.id AS activity_id, asl.id AS act_skill_id, asl.percentage AS act_skill_percentage, asm.mark
+                FROM activities a
+                JOIN act_skills asl ON a.id = asl.activity_id
+                LEFT JOIN act_skills_marks asm ON asl.id = asm.act_skill_id AND asm.user_id = '$idusuario'
+                WHERE a.project_id = '$idproyecto' AND a.status = 'close' AND asl.skill_id = '$project_skill_id'");
+
+            while ($row2 = $result2->fetch_assoc()) {
+                $activity_percentage = $row2['act_skill_percentage'];
+                $mark = ($row2['mark'] !== null) ? $row2['mark'] : 0;
+
+                // Calculamos la nota de la act_skill
+                $skill_mark += $mark * $activity_percentage / 100;
+            }
+
+            // Calculamos la nota de la habilidad y la sumamos al total del proyecto
+            $project_mark += $skill_mark * $project_skill_percentage / 100;
+        }
+
+        echo $project_mark;
     }
 
 
@@ -93,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $lines = file($csv['tmp_name'], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
                 // Obtén la primera línea y divide los valores
-                $keys = explode(',', $lines[0]);
+                $keys = explode(';', $lines[0]);
 
                 // Crea un array vacío para almacenar los objetos
                 $users = array();
@@ -101,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Recorre las líneas restantes del archivo CSV
                 for ($i = 1; $i < count($lines); $i++) {
                     // Divide la línea en valores individuales
-                    $values = explode(',', $lines[$i]);
+                    $values = explode(';', $lines[$i]);
 
                     // Crea un objeto y asigna los valores correspondientes
                     $user = new stdClass();
@@ -114,7 +183,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Agrega el objeto al array de usuarios
                     $users[] = $user;
                 }
+                //Hacemos echo de la array $users
 
+                //Recorremos la array de $users
+                foreach ($users as $user) {
+                    //Obtenemos el nombre, apellido, email, usuario y contraseña del usuario
+                    $name = $user->name;
+                    $surname = $user->surname;
+                    $email = $user->email;
+                    $username = $user->username;
+                    $password = $user->password;
+                    $role = $user->role;
+                    $groups = $user->groups;
+
+                    //Revisamos que haya $name, $surname, $email, $username y $role
+                    if ($name != "" && $surname != "" && $email != "" && $username != "" && ($role == "student" || $role == "teacher")) {
+                        //Si hay contraseña, se hace el sha256 de ella
+                        if ($password != "") {
+                            $password = hash('sha256', $password);
+                        } else {
+                            $password = hash('sha256', "");
+                        }
+                        //Si no existe un usuario con ese nombre de usuario, email o nombre y apellido
+                        $result = $conn->query("SELECT id FROM users WHERE user = '$username' OR email = '$email' OR (name = '$name' AND surname = '$surname')");
+                        if ($result->num_rows === 0) {
+                            //Creamos el usuario
+                            $conn->query("INSERT INTO users (name,surname,email,user,password_hash,role) VALUES ('$name','$surname','$email','$username','$password','$role')");
+                            $userid = $conn->insert_id;
+                            //Se recorren los grupos
+                            if ($groups != "") {
+                                $groups = explode(",", $groups);
+                                foreach ($groups as $group) {
+                                    //Se obtiene el id del grupo, si el grupo no existe se crea
+                                    $result = $conn->query("SELECT id FROM `groups` WHERE name = '$group'");
+                                    if ($result->num_rows === 0) {
+                                        $conn->query("INSERT INTO `groups` (name) VALUES ('$group')");
+                                        $groupid = $conn->insert_id;
+                                    } else {
+                                        $groupid = $result->fetch_assoc()['id'];
+                                    }
+                                    //Se añade el usuario al grupo
+                                    $conn->query("INSERT INTO groupmembers (user_id,group_id) VALUES ('$userid','$groupid')");
+                                }
+                            }
+                        }
+                    }
+                }
+                echo "true";
                 // Ahora tienes la matriz de objetos $users
                 // Puedes acceder a los valores de cada objeto utilizando la sintaxis $users[index]->clave
             }
@@ -159,9 +274,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $result = $conn->query("SELECT password_hash FROM users WHERE user = '$username'");
 
 
-                //Si result es falso, entonces el usuario no existe
-                if (!$result) {
-                    echo 'Error: El usuario no existe.';
+                //Si result no hay ningun usuario llamado así
+                if ($result->num_rows === 0) {
+                    echo 'incorrect';
                 } else {
                     //Obtén la contraseña almacenada
                     $row = $result->fetch_assoc();
@@ -177,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_SESSION['id'] = $row['id'];
                         echo 'true';
                     } else {
-                        echo 'false';
+                        echo 'incorrect';
                     }
                 };
                 break;
@@ -196,23 +311,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Home</title>
                         <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
                         <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                        <noscript>
+                            <link rel="stylesheet" href="assets/style/style.css">
+                        </noscript>
                     </head>
 
                     <body>
+                        <?php
+                        //Cargamos el header
+                        $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                        $row = $result->fetch_assoc();
+                        $name = $row['name'];
+                        $surname = $row['surname'];
+                        $email = $row['email'];
+                        $username = $row['user'];
+                        uploadHeader($_SESSION['id'], $name, $surname, $username, $email); ?>
                         <section id="main">
-                            <?php
-                            //Cargamos el header
-                            $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
-                            $row = $result->fetch_assoc();
-                            $name = $row['name'];
-                            $surname = $row['surname'];
-                            $email = $row['email'];
-                            $username = $row['user'];
-                            uploadHeader($_SESSION['id'], $name, $surname, $username, $email); ?>
                             <h2>Active Projects</h2>
                             <hr class="project">
 
@@ -241,8 +358,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             <?php
                             if ($_SESSION['role'] === 'admin') {
-                                echo '<input type="file" id="import" onchange="uploadCSV()">';
-                                echo "<button onclick='action(\"goUsers\")'>Users</button>";
+                            ?>
+                                <h2>Users Management</h2>
+                                <hr class="user">
+
+                                <div class="tag user">
+                                    <h3>Import CSV</h3>
+                                    <label for="csvInput" class="bx bx-upload"></label>
+                                    <input type="file" id="csvInput" accept=".csv" onchange="uploadCSV()">
+                                </div>
+
+                                <div class="scroll_tag user" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)" action="goUsers">
+                                    <h3>All Users</h3>
+                                    <i class="bx bx-chevrons-right"></i>
+                                </div>
+                            <?php
                             }
                             ?>
                         </section>
@@ -282,9 +412,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php
                         if ($_SESSION['role'] === 'admin') {
                         ?>
+                            async function csvImported(status) {
+                                const label = document.querySelector('label[for="csvInput"]');
+                                label.style.transition = 'all 0.5s ease';
+
+                                if (status) {
+                                    label.style.transform = 'rotate(360deg)';
+                                    label.style.opacity = '0';
+
+                                    await wait(1000);
+                                    label.style.transform = 'rotate(0deg)';
+                                    label.classList.remove('bx-upload');
+                                    label.classList.add('bx-check-double');
+                                    label.style.fontSize = '2rem';
+                                    label.style.opacity = '1';
+                                    await wait(4000);
+                                    label.style.opacity = '0';
+                                    label.classList.remove('bx-check-double');
+                                    label.style.fontSize = '24px';
+                                    label.classList.add('bx-upload');
+                                    label.style.opacity = '1';
+                                } else {
+                                    label.style.transform = 'rotate(360deg)';
+                                    label.style.transition = 'transform 0.7s, opacity 1s, all 1s';
+                                    label.style.opacity = '0';
+
+                                    await wait(1000);
+                                    label.style.transform = 'rotate(0deg)';
+                                    label.classList.remove('bx-upload');
+                                    label.classList.add('bx-x');
+                                    label.style.fontSize = '2rem';
+                                    label.style.opacity = '1';
+                                    await wait(4000);
+                                    label.style.opacity = '0';
+                                    label.classList.remove('bx-x');
+                                    label.style.fontSize = '24px';
+                                    label.classList.add('bx-upload');
+                                    label.style.opacity = '1';
+
+                                }
+                            }
 
                             function uploadCSV() {
-                                let csv = document.getElementById("import").files[0];
+                                let csv = document.getElementById("csvInput").files[0];
                                 let data = new FormData();
                                 data.append('csv', csv);
                                 data.append('import', 'true');
@@ -295,6 +465,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     .then(response => response.text())
                                     .then(content => {
                                         console.log(content);
+                                        if (content == "true") {
+                                            csvImported(true);
+                                        } else {
+                                            csvImported(false);
+                                        }
                                     });
                             }
                         <?php
@@ -314,18 +489,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Home</title>
-                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                        <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
                         <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                        <noscript>
+                            <link rel="stylesheet" href="assets/style/style.css">
+                        </noscript>
                     </head>
 
                     <body>
-                        <h1 id="uwu">Bienvenido <?php echo $_SESSION['username'] ?></h1>
-                        <button onclick="logOut()">Cerrar sessión</button>
+                        <?php
+                        //Cargamos el header
+                        $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                        $row = $result->fetch_assoc();
+                        uploadHeader($_SESSION['id'], $row['name'], $row['surname'], $row['user'], $row['email']);
+                        ?>
+                        <section id="main">
+                            <h2>Active Projects</h2>
+                            <hr class="project">
+                            <?php
+                            //Obtenemos los proyectos en los que está el usuario
+                            $result = $conn->query("SELECT project_id FROM project_users WHERE user_id = '$_SESSION[id]'");
+                            //Recorremos los proyectos
+                            while ($row = $result->fetch_assoc()) {
+                                $projectid = $row['project_id'];
+                                //Obtenemos el nombre del proyecto
+                                $project = $conn->query("SELECT name FROM projects WHERE id = '$projectid'");
+                                $project = $project->fetch_assoc()['name'];
+                                echo "<div class='scroll_tag project' onmousedown='handleStart(this)' ontouchstart='handleStart(this)' action='goProject' id='$projectid'>";
+                                echo "<h3>$project</h3>";
+                                echo '<i class="bx bx-chevrons-right"></i></div>';
+                            }
+                            ?>
+                            <h2>Your Grades</h2>
+                            <hr class="grade">
+
+                            <div class="scroll_tag grade" onmousedown="handleStart(this)" ontouchstart="handleStart(this)" action="goOverall" id="Overall">
+                                <h3>Overall</h3>
+                                <i class='bx bx-chevrons-right'></i>
+                            </div>
+                        </section>
                     </body>
                     <?php include_once "scripts.php"; ?>
+                    <script src="scroll.js"></script>
                     <script>
+                        function goProject(id) {
+                            fetchNispera({
+                                name: "action",
+                                value: "goProject"
+                            }, {
+                                name: "id",
+                                value: id
+                            }).then(response => {
+                                document.open();
+                                document.write(response);
+                                document.close();
+                            });
+                        }
                     </script>
 
                     </html>
@@ -351,8 +572,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $result = $conn->query("SELECT id FROM projects WHERE name = '$name'");
                             if ($result->num_rows === 0) {
                                 //Creamos el proyecto y obtenemos su id
-                                $conn->query("INSERT INTO projects (name,status) VALUES ('$name','open')");
+                                $stmt = $conn->prepare("INSERT INTO projects (name, status) VALUES (?, ?)");
+                                $stmt->bind_param("ss", $name, $status);
+                                $stmt->execute();
                                 $projectid = $conn->insert_id;
+                                $stmt->close();
 
                                 // Obtenemos el id del usuario $_SESSION['username']
                                 $teacherid = $_SESSION['id'];
@@ -399,7 +623,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             $skillid = intval(str_replace("#", "", $skill[0]));
                                             $range = $skill[1];
                                             //Añadimos la skill al proyecto
-                                            $conn->query("INSERT INTO project_skills (project_id,skill_id,percentage) VALUES ('$projectid','$skillid','$range')");
+                                            $stmt = $conn->prepare("INSERT INTO project_skills (project_id, skill_id, percentage) VALUES (?, ?, ?)");
+                                            $stmt->bind_param("iii", $projectid, $skillid, $range);
+                                            $stmt->execute();
+                                            $stmt->close();
                                         }
                                         echo "true";
                                     } else {
@@ -437,10 +664,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>Create Project</title>
                             <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
-                        <link rel="stylesheet" href="assets/style/style.css" />
-                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
                         </head>
 
                         <body>
@@ -658,10 +887,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title><?php echo  $projectname; ?></title>
                             <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
-                        <link rel="stylesheet" href="assets/style/style.css" />
-                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
                         </head>
 
                         <body>
@@ -698,21 +929,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <h3>New Activity</h3>
                                     <i class='bx bx-plus'></i>
                                 </div>
-                                <div id="activities">
-                                    <?php
-                                    //Obtenemos las actividades del proyecto
-                                    $result = $conn->query("SELECT id, name, status FROM activities WHERE project_id = '{$_SESSION['current_project']}' ORDER BY id DESC");
-                                    //Recorremos las actividades
-                                    while ($row = $result->fetch_assoc()) {
-                                        $id = $row['id'];
-                                        $name = $row['name'];
-                                        $status = $row['status'];
-                                        echo "<div>";
-                                        echo "<button class='$status' onclick='goActivity($id)'>$name</button>";
-                                        echo "</div>";
+                                <?php
+                                //Obtenemos las actividades del proyecto
+                                $result = $conn->query("SELECT id, name, status FROM activities WHERE project_id = '{$_SESSION['current_project']}' ORDER BY id DESC");
+                                //Recorremos las actividades
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    $status = $row['status'];
+                                    if ($status === "open") {
+                                ?>
+                                        <div class="scroll_tag activity" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)" action="goAct" id=<?php echo "'$id'"; ?>>
+                                            <h3><?php echo "$name"; ?></h3>
+                                            <i class='bx bx-chevrons-right'></i>
+                                        </div>
+                                <?php
                                     }
-                                    ?>
-                                </div>
+                                }
+                                ?>
+                                <?php
+                                //Recorremos las actividades
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    $status = $row['status'];
+                                    if ($status === "close") {
+                                ?>
+                                        <div class="scroll_tag cactivity" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)" action="goAct" id=<?php echo "'$id'"; ?>>
+                                            <h3><?php echo "$name"; ?></h3>
+                                            <i class='bx bx-chevrons-right'></i>
+                                        </div>
+                                <?php
+                                    }
+                                }
+                                ?>
+
+                                <?php
+                                //Obtenemos las actividades del proyecto
+                                $result = $conn->query("SELECT id, name, status FROM activities WHERE project_id = '{$_SESSION['current_project']}' ORDER BY id DESC");
+                                //Recorremos las actividades
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    $status = $row['status'];
+                                    if ($status === "close") {
+                                ?>
+                                        <div class="scroll_tag cactivity" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)" action="goAct" id=<?php echo "'$id'"; ?>>
+                                            <h3><?php echo "$name"; ?></h3>
+                                            <i class='bx bx-chevrons-right'></i>
+                                        </div>
+                                <?php
+                                    }
+                                }
+                                ?>
                             </section>
                             <script src="scroll.js"></script>
                         </body>
@@ -827,6 +1096,131 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <?php
                     } else if ($_SESSION['role'] === 'student') {
+                        //Obtenemos el nombre del proyecto
+                        $result = $conn->query("SELECT name FROM projects WHERE id = '{$_SESSION['current_project']}'");
+                        $row = $result->fetch_assoc();
+                        $projectname = $row['name'];
+                    ?>
+                        <!DOCTYPE html>
+                        <html lang="en">
+
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title><?php echo "$projectname"; ?></title>
+                            <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
+                        </head>
+
+                        <body>
+                            <?php
+                            //Cargamos el header
+                            $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                            $row = $result->fetch_assoc();
+                            uploadHeader($_SESSION['id'], $row['name'], $row['surname'], $row['user'], $row['email']);
+                            ?>
+                            <section id="main">
+                                <div class="nav">
+                                    <i class='bx bx-undo' onclick="action('main')"></i>
+                                    <div id="nav-extra"></div>
+                                </div>
+                                <div class="title">
+                                    <h1><?php echo "$projectname"; ?></h1>
+                                </div>
+
+                                <h2>Activities</h2>
+                                <hr class="activity">
+                                <?php
+                                //Obtenemos las actividades del proyecto con status "open"
+                                $result = $conn->query("SELECT id, name, status FROM activities WHERE project_id = '{$_SESSION['current_project']}' AND status = 'open' ORDER BY id DESC");
+                                //Recorremos las actividades
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    echo "<div class='scroll_tag activity' onclick='handleClick(this)'' onmousedown='handleStart(this)' ontouchstart='handleStart(this)'' action='goAct' id='$id'>";
+                                    echo "<h3>$name</h3><i class='bx bx-chevrons-right'></i>";
+                                    echo "</div>";
+                                }
+
+                                //Obtenemos las acticidades del proyecto con status "close"
+                                $result = $conn->query("SELECT id, name, status FROM activities WHERE project_id = '{$_SESSION['current_project']}' AND status = 'close' ORDER BY id DESC");
+                                //Recorremos las actividades
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    echo "<div class='scroll_tag cactivity' onclick='handleClick(this)'' onmousedown='handleStart(this)' ontouchstart='handleStart(this)'' action='goAct' id='$id'>";
+                                    echo "<h3>$name</h3><i class='bx bx-chevrons-right'></i>";
+                                    echo "</div>";
+                                }
+                                ?>
+                                <h2>Your Grades</h2>
+                                <hr class="grade">
+
+                                <div class="grade_tag">
+                                    <div id="your-grades-display"></div>
+                                    <div id="max-grades-display"></div>
+                                </div>
+                                <div class="title">
+                                    <p><span id="your-grades"><?php studentMark("{$_SESSION['id']}", "{$_SESSION['current_project']}"); ?></span> / <span id="max-grades"><?php maxMark("{$_SESSION['current_project']}"); ?></span></p>
+                                </div>
+
+                                <h2>Ranking</h2>
+                                <hr class="leaderboard">
+
+                                <div class="scroll_tag leaderboard" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)" action="goLeaderboard" id="leaderboard">
+                                    <h3>Leaderboard</h3>
+                                    <i class='bx bx-chevrons-right'></i>
+                                </div>
+                            </section>
+                            <script src="scroll.js"></script>
+                        </body>
+                        <?php include_once "scripts.php"; ?>
+                        <script>
+                            function checkGrades() {
+                                let yourGrades = parseFloat(document.getElementById('your-grades').textContent);
+                                let maxGrades = parseFloat(document.getElementById('max-grades').textContent);
+
+                                if (maxGrades - yourGrades <= 2) {
+                                    document.getElementById('your-grades').style.color = 'var(--completed-activity-color)';
+                                } else if (maxGrades - yourGrades <= 5) {
+                                    document.getElementById('your-grades').style.color = 'orange';
+                                } else {
+                                    document.getElementById('your-grades').style.color = 'red';
+                                }
+
+                                //Obtenemos #your-grades-display y #max-grades-display
+                                let yourGradesDisplay = document.getElementById('your-grades-display');
+                                let maxGradesDisplay = document.getElementById('max-grades-display');
+
+                                //Les modificamos el width % con el valor de yourGrades y maxGrades *10
+                                yourGradesDisplay.style.width = yourGrades * 10 + "%";
+                                maxGradesDisplay.style.width = maxGrades * 10 + "%";
+                            }
+
+                            checkGrades();
+
+                            function goActivity(id) {
+                                fetchNispera({
+                                    name: "action",
+                                    value: "goActivity"
+                                }, {
+                                    name: "id",
+                                    value: id
+                                }).then(response => {
+                                    document.open();
+                                    document.write(response);
+                                    document.close();
+                                });
+                            }
+                        </script>
+
+                        </html>
+                    <?php
                     }
                 }
                 break;
@@ -835,7 +1229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     //Obtenemos el nombre del proyecto
                     $result = $conn->query("SELECT name FROM projects WHERE id = '{$_SESSION['current_project']}'");
                     $row = $result->fetch_assoc();
-                    $name = $row['name'];
+                    $projectname = $row['name'];
                     ?>
                     <!DOCTYPE html>
                     <html lang="en">
@@ -843,17 +1237,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <head>
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                        <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
                         <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
-                        <title>Edit <?php echo $name; ?></title>
+                        <noscript>
+                            <link rel="stylesheet" href="assets/style/style.css">
+                        </noscript>
+                        <title>Edit <?php echo $projectname; ?></title>
                     </head>
 
                     <body>
-                        <button onclick="action('goProject')">back</button>
-                        <button onclick="action('deleteProject');action('main');">Delete this project</button>
-                        <div id="Activities">
+                        <?php
+                        //Cargamos el header
+                        $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                        $row = $result->fetch_assoc();
+                        $name = $row['name'];
+                        $surname = $row['surname'];
+                        $email = $row['email'];
+                        $username = $row['user'];
+                        uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
+                        ?>
+                        <section id="main">
+                            <div class="nav">
+                                <i class='bx bx-undo' onclick="action('goProject')"></i>
+                                <div id="nav-extra"><i class='bx bxs-save'></i>
+                                    <p>Save <span id="nav-extra-type">Project</span></p>
+                                </div>
+                            </div>
+                            <div class="title">
+                                <input type="text" placeholder="Project XX" value=<?php echo "'$projectname'"; ?>>
+                            </div>
+
+                            <h2>Activities</h2>
+                            <hr class="activity">
                             <?php
                             //Obtenemos las actividades del proyecto
                             $result = $conn->query("SELECT id, name, status FROM activities WHERE project_id = '{$_SESSION['current_project']}'");
@@ -862,12 +1279,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 $id = $row['id'];
                                 $name = $row['name'];
                                 $status = $row['status'];
-                                echo "<div>";
-                                echo "<button class='$status' onclick='goActivity($id)'>$name</button><button onclick='deleteActivity($id)'>Delete</button>";
+                                //Real
+                                if ($status == "open") {
+                                    echo "<div class='tag activity' onclick='goActivity($id)'>";
+                                } else {
+                                    echo "<div class='tag cactivity' onclick='goActivity($id)'>";
+                                }
+                                echo "<h3>$name</h3>";
+                                echo "<i class='bx bxs-trash-alt' onclick='deleteActivity($id)'></i>";
                                 echo "</div>";
                             }
                             ?>
-                        </div>
+                            <div class="delete-button" onclick="action('deleteProject');action('main');">
+                                <i class='bx bxs-eraser'></i>
+                                <p>Delete this <span id="delete-extra-type">Project</span></p>
+                            </div>
+                        </section>
                     </body>
                     <?php include_once "scripts.php"; ?>
                     <script>
@@ -944,52 +1371,183 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Users</title>
-                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                        <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
                         <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                        <noscript>
+                            <link rel="stylesheet" href="assets/style/style.css">
+                        </noscript>
                     </head>
 
                     <body>
-                        <button onclick="action('main')">back</button>
-                        <button onclick="action('editUser')">New User</button>
-                        <h1>Administrators</h1>
                         <?php
-                        $result = $conn->query("SELECT id, name, surname FROM users WHERE role = 'admin'");
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $id = $row['id'];
-                            $name = $row['name'];
-                            $surname = $row['surname'];
-                            //Si el usuario no es el mismo que el que está logueado
-                            if ($id != $_SESSION['id']) {
-                                echo "<button onclick='editUser($id)'>$name $surname</button>";
-                            } else {
-                                echo "You";
-                            }
-                        }
+                        //Cargamos el header
+                        $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                        $row = $result->fetch_assoc();
+                        $name = $row['name'];
+                        $surname = $row['surname'];
+                        $email = $row['email'];
+                        $username = $row['user'];
+                        uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
                         ?>
-                        <h1>Teachers</h1>
-                        <?php
-                        $result = $conn->query("SELECT id, name, surname FROM users WHERE role = 'teacher'");
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $id = $row['id'];
-                            $name = $row['name'];
-                            $surname = $row['surname'];
-                            //Si el usuario no es el mismo que el que está logueado
-                            echo "<button onclick='editUser($id)'>$name $surname</button>";
-                        }
-                        ?>
-                        <h1>Students</h1>
-                        <?php
-                        $result = $conn->query("SELECT id, name, surname FROM users WHERE role = 'student'");
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $id = $row['id'];
-                            $name = $row['name'];
-                            $surname = $row['surname'];
-                            //Si el usuario no es el mismo que el que está logueado
-                            echo "<button onclick='editUser($id)'>$name $surname</button>";
-                        }
-                        ?>
+                        <section id="main">
+                            <div class="nav">
+                                <i class='bx bx-undo' onclick="action('main')"></i>
+                                <div id="nav-extra"></div>
+                            </div>
+                            <div class="title">
+                                <h1>Users</h1>
+                            </div>
+
+                            <h2>Active Users</h2>
+                            <hr class="user">
+
+                            <div class="tag nuser" onclick="action('editUser')">
+                                <h3>New User</h3>
+                                <i class="bx bx-plus"></i>
+                            </div>
+
+                            <div class="with-filter">
+                                <h2>Administrators</h2>
+                                <i class='bx bxs-filter-alt bx-flip-horizontal' onclick="filterSort('alladmins', 'sort')"></i>
+                            </div>
+                            <hr class="user">
+
+                            <div id="alladmins">
+                                <?php
+                                $result = $conn->query("SELECT id, name, surname, email, user FROM users WHERE role = 'admin'");
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    $surname = $row['surname'];
+                                    $email = $row['email'];
+                                    $username = $row['user'];
+                                    //Si el usuario no es el mismo que el que está logueado
+                                    if ($id != $_SESSION['id']) {
+                                ?>
+                                        <div class="sort">
+                                            <div class="generic generic-table" onclick=<?php echo "'openUser($id, this)'"; ?>>
+                                                <div><img src=<?php $img = obtainImage($id);
+                                                                echo "$img"; ?> alt="user_portrait" id="portrait">
+                                                    <p><?php echo "$name $surname"; ?></p>
+                                                </div>
+                                                <div><i class="bx bx-chevron-right"></i></div>
+                                            </div>
+                                            <div class="white height-0 user-options-edit" id=<?php echo "'$id'"; ?>>
+                                                <div>
+                                                    <p>Username:<span><?php echo "$username"; ?></span></p>
+                                                    <p>Email:<span><?php echo "$email"; ?></span></p>
+                                                </div>
+                                                <div onclick=<?php echo "'editUser($id)'"; ?>><i class='bx bxs-edit'></i>
+                                                    <p>Edit User</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php
+                                    } else {
+                                    ?>
+                                        <div class="sort">
+                                            <div class="generic generic-table" onclick=<?php echo "'openUser($id, this)'"; ?>>
+                                                <div><img src=<?php $img = obtainImage($id);
+                                                                echo "$img"; ?> alt="user_portrait" id="portrait">
+                                                    <p>You</p>
+                                                </div>
+                                                <div><i class="bx bx-chevron-right"></i></div>
+                                            </div>
+                                            <div class="white height-0 user-options-edit" id=<?php echo "'$id'"; ?>>
+                                                <div>
+                                                    <p>Username:<span><?php echo "$username"; ?></span></p>
+                                                    <p>Email:<span><?php echo "$email"; ?></span></p>
+                                                </div>
+                                                <div onclick=<?php echo "'editUser($id)'"; ?>><i class='bx bxs-edit'></i>
+                                                    <p>Edit User</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                <?php
+                                    }
+                                }
+                                ?>
+                            </div>
+                            <div class="with-filter">
+                                <h2>Teachers</h2>
+                                <i class='bx bxs-filter-alt bx-flip-horizontal' onclick="filterSort('allteachers', 'sort')"></i>
+                            </div>
+                            <hr class="user">
+                            <div id="allteachers">
+                                <?php
+                                $result = $conn->query("SELECT id, name, surname, email, user FROM users WHERE role = 'teacher'");
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    $surname = $row['surname'];
+                                    $email = $row['email'];
+                                    $username = $row['user'];
+                                    //Si el usuario no es el mismo que el que está logueado
+                                ?>
+                                    <div class="sort">
+                                        <div class="generic generic-table" onclick=<?php echo "'openUser($id, this)'"; ?>>
+                                            <div><img src=<?php $img = obtainImage($id);
+                                                            echo "$img"; ?> alt="user_portrait" id="portrait">
+                                                <p><?php echo "$name $surname"; ?></p>
+                                            </div>
+                                            <div><i class="bx bx-chevron-right"></i></div>
+                                        </div>
+                                        <div class="white height-0 user-options-edit" id=<?php echo "'$id'"; ?>>
+                                            <div>
+                                                <p>Username:<span><?php echo "$username"; ?></span></p>
+                                                <p>Email:<span><?php echo "$email"; ?></span></p>
+                                            </div>
+                                            <div onclick=<?php echo "'editUser($id)'"; ?>><i class='bx bxs-edit'></i>
+                                                <p>Edit User</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php
+                                }
+                                ?>
+                            </div>
+                            <div class="with-filter">
+                                <h2>Students</h2>
+                                <i class='bx bxs-filter-alt bx-flip-horizontal' onclick="filterSort('allstudents', 'sort')"></i>
+                            </div>
+                            <hr class="user">
+
+                            <div id="allstudents">
+                                <?php
+                                $result = $conn->query("SELECT id, name, surname, email, user FROM users WHERE role = 'student'");
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    $surname = $row['surname'];
+                                    $email = $row['email'];
+                                    $username = $row['user'];
+                                    //Si el usuario no es el mismo que el que está logueado
+                                ?>
+                                    <div class="sort">
+                                        <div class="generic generic-table" onclick=<?php echo "'openUser($id, this)'"; ?>>
+                                            <div><img src=<?php $img = obtainImage($id);
+                                                            echo "$img"; ?> alt="user_portrait" id="portrait">
+                                                <p><?php echo "$name $surname"; ?></p>
+                                            </div>
+                                            <div><i class="bx bx-chevron-right"></i></div>
+                                        </div>
+                                        <div class="white height-0 user-options-edit" id=<?php echo "'$id'"; ?>>
+                                            <div>
+                                                <p>Username:<span><?php echo "$username"; ?></span></p>
+                                                <p>Email:<span><?php echo "$email"; ?></span></p>
+                                            </div>
+                                            <div onclick=<?php echo "'editUser($id)'"; ?>><i class='bx bxs-edit'></i>
+                                                <p>Edit User</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php
+                                }
+                                ?>
+                            </div>
+                        </section>
                     </body>
                     <?php include_once "scripts.php"; ?>
                     <script>
@@ -1005,6 +1563,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 document.write(response);
                                 document.close();
                             });
+                        }
+
+                        function filterSort(containerId, itemClass) {
+                            let container = document.getElementById(containerId);
+                            let items = Array.from(container.getElementsByClassName(itemClass));
+
+                            if (!filterSort.counter) {
+                                filterSort.counter = 1;
+                            } else {
+                                filterSort.counter *= -1;
+                            }
+
+                            let sortedItems = items.slice().sort((a, b) => {
+                                let nameA = a.querySelector('p').textContent.toLowerCase();
+                                let nameB = b.querySelector('p').textContent.toLowerCase();
+
+                                return filterSort.counter * nameA.localeCompare(nameB);
+                            });
+
+                            items.forEach(person => container.removeChild(person));
+                            sortedItems.forEach(person => container.appendChild(person));
+                        }
+
+                        function openUser(userId, user) {
+                            let div = document.getElementById(`${userId}`);
+                            let icon = user.querySelector('.bx-chevron-right');
+
+                            if (div.classList.contains("height-0")) {
+                                div.style.padding = "4px 10px";
+                                div.classList.remove("height-0");
+                                div.classList.add("fit-content");
+                                icon.style.transform = "rotate(90deg)";
+                            } else {
+                                div.style.padding = "0px";
+                                div.classList.remove("fit-content");
+                                div.classList.add("height-0");
+                                icon.style.transform = "rotate(0deg)";
+                            }
                         }
                     </script>
 
@@ -1044,42 +1640,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Edit <?php echo $username; ?></title>
-                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                        <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
                         <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                        <noscript>
+                            <link rel="stylesheet" href="assets/style/style.css">
+                        </noscript>
                     </head>
 
                     <body>
-                        <button onclick="action('goUsers')">back</button>
-                        <img src=<?php echo '"' . obtainImage($id) . '"'; ?> alt="profile picture" width="50px" height="50px">
-                        <input onchange=<?php echo "\"changePP($id)\""; ?> type="file" id="pp">
-                        <input type="text" id="name" placeholder="name" value=<?php echo '"' . $name . '"'; ?>>
-                        <input type="text" id="surname" placeholder="surname" value=<?php echo '"' . $surname . '"'; ?>>
-                        <br>
-                        <input type="mail" id="email" placeholder="email" value=<?php echo '"' . $email . '"'; ?>>
-                        <input type="text" id="user" placeholder="user" value=<?php echo '"' . $user . '"'; ?>>
-                        <select id="role">
-                            <option value="student" <?php if ($role === 'student') echo 'selected'; ?>>Student</option>
-                            <option value="teacher" <?php if ($role === 'teacher') echo 'selected'; ?>>Teacher</option>
-                        </select>
-                        <?php
-                        //Obtenemos todos los grupos de los que el usuario es groupmember
-                        $result = $conn->query("SELECT group_id FROM groupmembers WHERE user_id = '$id'");
-                        $groups = "";
-                        while ($row = $result->fetch_assoc()) {
-                            //Obtenemos el nombre del grupo
-                            $result2 = $conn->query("SELECT name FROM `groups` WHERE id = '{$row['group_id']}'");
-                            $row2 = $result2->fetch_assoc();
-                            $groups .= $row2['name'] . ",";
-                        }
-                        //Si el 
-                        //Quitamos la ultima coma
-                        $groups = substr($groups, 0, -1);
-                        //Ponemos el input groups
-                        echo "<input type='text' id='groups' placeholder='Ungrouped' value='$groups'>";
-                        ?>
-                        <button onclick="saveUser()">Save User</button>
+
+                        <section id="main">
+                            <?php if (isset($data['id'])) { ?>
+                                <div class="delete-confirm-container">
+                                    <div class="delete-confirm">
+                                        <p>Confirm deletion?</p>
+                                        <div>
+                                            <button onclick=<?php echo "'deleteUser($id)'"; ?>>Yes</button>
+                                            <button onclick="confirmDelete(false)">No</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <script>
+                                    function confirmDelete(show) {
+                                        let deleteConfirmContainer = document.querySelector(
+                                            ".delete-confirm-container"
+                                        );
+                                        setTimeout(() => {
+                                            if (show) {
+                                                deleteConfirmContainer.style.height = "100%";
+                                            } else {
+                                                deleteConfirmContainer.style.height = "0px";
+                                            }
+                                        }, 300);
+                                    }
+                                </script>
+                            <?php } ?>
+                            <div class="nav">
+                                <i class='bx bx-undo' onclick="action('goUsers')"></i>
+                                <div id="nav-extra"></div>
+                            </div>
+                            <div class="edit-user-profile">
+                                <div><input type="file" id="pp" onchange=<?php echo "'changePP($id);updateImgPreview(this)'"; ?>><label for="portrait" style=<?php $img = obtainImage($id);
+                                                                                                                                                                echo "'background-image:url($img)'"; ?>></label></div>
+                                <div><input id="name" type="text" placeholder="Name" value=<?php echo '"' . $name . '"'; ?>></div>
+                                <div><input id="surname" type="text" placeholder="Surname Surname" value=<?php echo '"' . $surname . '"'; ?>></div>
+                            </div>
+                            <div class="edit-user-profile-additional">
+                                <div>
+                                    <i class='bx bxs-envelope'></i>
+                                    <input type="mail" placeholder="Email" id="email" value=<?php echo '"' . $email . '"'; ?>>
+                                </div>
+                                <div>
+                                    <i class='bx bxs-user'></i>
+                                    <input type="text" placeholder="Username" id="user" value=<?php echo '"' . $user . '"'; ?>>
+                                </div>
+                                <div>
+                                    <i class='bx bxs-id-card'></i>
+                                    <select id="role">
+                                        <option value="student" <?php if ($role === 'student') echo 'selected'; ?>>Student</option>
+                                        <option value="teacher" <?php if ($role === 'teacher') echo 'selected'; ?>>Teacher</option>
+                                    </select>
+                                </div>
+                                <?php
+                                //Obtenemos todos los grupos de los que el usuario es groupmember
+                                $result = $conn->query("SELECT group_id FROM groupmembers WHERE user_id = '$id'");
+                                $groups = "";
+                                while ($row = $result->fetch_assoc()) {
+                                    //Obtenemos el nombre del grupo
+                                    $result2 = $conn->query("SELECT name FROM `groups` WHERE id = '{$row['group_id']}'");
+                                    $row2 = $result2->fetch_assoc();
+                                    $groups .= $row2['name'] . ",";
+                                }
+                                //Si el 
+                                //Quitamos la ultima coma
+                                $groups = substr($groups, 0, -1);
+                                //Ponemos el input groups
+                                echo "<div><i class='bx bxs-group'></i><input type='text' id='groups' placeholder='Ungrouped' value='$groups'></div>";
+                                ?>
+                            </div>
+                            </div>
+
+                            <div class="save_button_container">
+                                <button class="user save_button" onclick="saveUser()"><i class='bx bxs-save'></i>Save</button>
+                            </div>
+
+                            <div class="delete-button" onclick="confirmDelete(true)">
+                                <i class='bx bxs-eraser'></i>
+                                <p>Delete this <span id="delete-extra-type">User</span></p>
+                            </div>
+                            </div>
+                        </section>
                     </body>
                     <?php include_once "scripts.php"; ?>
                     <script>
@@ -1144,8 +1796,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($count == 0) {
                             echo "true";
                             if ($_SESSION['current_user'] == "") {
-                                $conn->query("INSERT INTO users (name,surname,user,role,email,password_hash) VALUES ('$name','$surname','$user','$role','$email','e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')");
+                                $stmt = $conn->prepare("INSERT INTO users (name, surname, user, role, email, password_hash) VALUES (?, ?, ?, ?, ?, ?)");
+                                $stmt->bind_param("ssssss", $name, $surname, $user, $role, $email, $password);  // "ssssss" indica que todos son cadenas
+
+                                // Ejecutamos la consulta
+                                $stmt->execute();
                                 $id = $conn->insert_id;
+
+                                // Cerramos la consulta preparada
+                                $stmt->close();
 
                                 //Por cada grupo que haya en $groups, añadimos al usuario a ese grupo
                                 $groups = explode(",", $groups);
@@ -1200,13 +1859,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $result = $conn->query("SELECT password_hash FROM users WHERE id = '{$_SESSION['id']}'");
                 $row = $result->fetch_assoc();
                 $password = $row['password_hash'];
-                //Si la contraseña antigua es igual a la del usuario
-                if ($current === $password) {
-                    //Actualizamos la contraseña
-                    $conn->query("UPDATE users SET password_hash = '$new' WHERE id = '{$_SESSION['id']}'");
-                    echo "true";
-                } else {
+                //Verficamos que la contraseña sea de 8 caracteres y contenga al menos una letra y un numero
+                if (strlen($data['new']) < 8 || !preg_match("#[0-9]+#", $data['new']) || !preg_match("#[a-zA-Z]+#", $data['new'])) {
                     echo "false";
+                } else {
+                    //Si la contraseña antigua es igual a la del usuario
+                    if ($current === $password) {
+                        //Actualizamos la contraseña
+                        $conn->query("UPDATE users SET password_hash = '$new' WHERE id = '{$_SESSION['id']}'");
+                        echo "true";
+                    } else {
+                        echo "false";
+                    }
                 }
                 break;
             case "addPeople":
@@ -1220,10 +1884,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Add People</title>
                         <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-                        <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                        <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
                         <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                        <noscript>
+                            <link rel="stylesheet" href="assets/style/style.css">
+                        </noscript>
                     </head>
 
                     <body>
@@ -1505,10 +2171,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>Add Skill</title>
                     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-                    <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
-                        <link rel="stylesheet" href="assets/style/style.css" />
-                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                    <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                    <link rel="stylesheet" href="assets/style/style.css" />
+                    <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                    <noscript>
+                        <link rel="stylesheet" href="assets/style/style.css">
+                    </noscript>
                 </head>
 
                 <body>
@@ -1616,111 +2284,159 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </script>
 
                 </html>
-            <?php
+                <?php
                 break;
             case "goSkills":
                 echo $_SESSION['current_skills'];
-            ?>
-                <!DOCTYPE html>
-                <html lang="en">
+                if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+                    //Obtenemos el nombre del proyecto
+                    $result = $conn->query("SELECT name FROM projects WHERE id = '{$_SESSION['current_project']}'");
+                    $row = $result->fetch_assoc();
+                    $projectname = $row['name'];
+                ?>
+                    <!DOCTYPE html>
+                    <html lang="en">
 
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Skills</title>
-                    <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Skills</title>
+                        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                        <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
                         <link rel="stylesheet" href="assets/style/style.css" />
                         <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
-                </head>
+                        <noscript>
+                            <link rel="stylesheet" href="assets/style/style.css">
+                        </noscript>
+                    </head>
 
-                <body>
-                    <button onclick='updateSkills()'>back</button>
-                    <button onclick='action("addSkill")'>New Skill</button>
+                    <body>
+                        <?php
+                        //Cargamos el header
+                        $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                        $row = $result->fetch_assoc();
+                        $name = $row['name'];
+                        $surname = $row['surname'];
+                        $email = $row['email'];
+                        $username = $row['user'];
+                        uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
+                        ?>
+                        <section id="main">
+                            <div class="nav">
+                                <i class='bx bx-undo' onclick='updateSkills()'></i>
+                                <div id="nav-extra"></div>
+                            </div>
+
+                            <div class="skill-flex">
+                                <div class="double-title">
+                                    <span><?php echo "$projectname"; ?></span>
+                                    <p class="skill-color">Skills</p>
+                                </div>
+                                <div class="showTotalPercent">
+                                    <p>= <span id="totalPercent"></span>%</p>
+                                </div>
+                            </div>
+                            <h2>Items</h2>
+                            <hr class="skill">
+
+                            <div class="tag nskill" onclick='action("addSkill")'>
+                                <h3>Add Skill</h3>
+                                <i class='bx bx-plus'></i>
+                            </div>
+                            <?php
+                            //Si no hay skills, no imprimimos nada
+                            if ($_SESSION['current_skills'] != "") {
+                                //Se le quita el ultimo ; a las current_skills
+                                $skills = substr($_SESSION['current_skills'], 0, -1);
+                                //Separamos la lista de skills en un array
+                                $skills = explode(";", $skills);
+                                //Recorremos el array
+                                foreach ($skills as $skill) {
+                                    //Separamos el id de la skill y el rango
+                                    $skill = explode(":", $skill);
+                                    // QUitale los # a la id
+                                    $id = str_replace("#", "", $skill[0]);
+                                    $range = $skill[1];
+
+                                    //Obtenemos el nombre i la imagen de la skill
+                                    $result = $conn->query("SELECT name, src FROM skills WHERE id = '$id'");
+                                    $row = $result->fetch_assoc();
+                                    $name = $row['name'];
+                                    $src = $row['src'];
+                                    $path = "assets/skills/black/";
+                            ?>
+                                    <div class="edit-percent">
+                                        <input id=<?php echo "#$id#"; ?> type="range" class="skill-percent" min="0" max="100" value=<?php echo "'$range'"; ?>>
+                                        <div class="edit-percent-inner">
+                                            <div><img src=<?php echo "'$domain$path$src'"; ?> alt="Skill_icon">
+                                                <p><?php echo "$name"; ?></p>
+                                            </div>
+                                            <div>
+                                                <p class="percentage-display"><?php echo "$range"; ?>%</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                            <?php
+                                }
+                            }
+
+                            ?>
+                        </section>
+                        <script src="limit100.js"></script>
+                    </body>
+                    <?php include_once "scripts.php"; ?>
+                    <script>
+                        function updateSkills() {
+                            var skillList = "";
+                            var skills = document.querySelectorAll(".skill-percent");
+                            skills.forEach(skill => {
+                                skillList += "#" + skill.id + ":" + skill.value + ";";
+                            });
+                            fetchNispera({
+                                name: "action",
+                                value: "updateSkills"
+                            }, {
+                                name: "skills",
+                                value: skillList
+                            }).then(response => {
+                                console.log(response);
+                            });;
+                            action("goProject");
+                        }
+                    </script>
+
+                    </html>
                     <?php
-                    //Si no hay skills, no imprimimos nada
-                    if ($_SESSION['current_skills'] != "") {
-                        //Se le quita el ultimo ; a las current_skills
-                        $skills = substr($_SESSION['current_skills'], 0, -1);
-                        //Separamos la lista de skills en un array
-                        $skills = explode(";", $skills);
-                        //Recorremos el array
-                        echo "<div id='skills'>";
-                        foreach ($skills as $skill) {
-                            //Separamos el id de la skill y el rango
-                            $skill = explode(":", $skill);
-                            // QUitale los # a la id
-                            $id = str_replace("#", "", $skill[0]);
-                            $range = $skill[1];
-
-                            //Obtenemos el nombre i la imagen de la skill
-                            $result = $conn->query("SELECT name, src FROM skills WHERE id = '$id'");
-                            $row = $result->fetch_assoc();
-                            $name = $row['name'];
-                            $src = $row['src'];
-                            $path = "assets/skills/black/";
-                            //Imprimimos la skill
-                            echo "<div>";
-                            echo "<img src='$domain$path$src' alt='$name'>";
-                            echo "<p>$name</p>";
-                            echo "<input id='#$id#' type='range' min='0' max='100' value='$range'>";
-                            echo "</div>";
-                        }
-                        echo "</div>";
-                    }
-
-                    ?>
-                </body>
-                <?php include_once "scripts.php"; ?>
-                <script>
-                    function updateSkills() {
-                        let skills = document.getElementById("skills").children;
-                        var skillList = "";
-                        for (let i = 0; i < skills.length; i++) {
-                            let skill = skills[i];
-                            let id = skill.children[2].id;
-                            let range = skill.children[2].value;
-                            skillList += id + ":" + range + ";";
-                        }
-                        fetchNispera({
-                            name: "action",
-                            value: "updateSkills"
-                        }, {
-                            name: "skills",
-                            value: skillList
-                        }).then(response => {
-                            console.log(response);
-                        });;
-                        action("goProject");
-                    }
-                </script>
-
-                </html>
-                <?php
+                }
                 break;
             case "saveSkill":
                 if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
                     $name = $data['name'];
                     $range = $data['range'];
                     $image = $data['image'];
-                    //Verificamos si existe una skill con ese mismo nombre, si ya existe obtenemos el id, si no existe la creamos i obtenemos el id
-                    $result = $conn->query("SELECT id FROM skills WHERE name = '$name'");
-                    if ($result->num_rows > 0) {
-                        $row = $result->fetch_assoc();
-                        //Cambiamos la imagen de la skill
-                        $conn->query("UPDATE skills SET src = '$image' WHERE id = '$row[id]'");
-                        $id = "#" . $row['id'] . "#";
+                    //Si tiene nombre
+                    if ($name != "") {
+                        //Verificamos si existe una skill con ese mismo nombre, si ya existe obtenemos el id, si no existe la creamos i obtenemos el id
+                        $result = $conn->query("SELECT id FROM skills WHERE name = '$name'");
+                        if ($result->num_rows > 0) {
+                            $row = $result->fetch_assoc();
+                            //Cambiamos la imagen de la skill
+                            $conn->query("UPDATE skills SET src = '$image' WHERE id = '$row[id]'");
+                            $id = "#" . $row['id'] . "#";
+                        } else {
+                            $conn->query("INSERT INTO skills (name,src) VALUES ('$name','$image')");
+                            $id = "#" . $conn->insert_id . "#";
+                        }
+                        //Si el id de la skill no está en la lista de skills, la añadimos
+                        if (strpos($_SESSION['current_skills'], $id) === false) {
+                            $_SESSION['current_skills'] .= "$id:$range;";
+                        }
                     } else {
-                        $conn->query("INSERT INTO skills (name,src) VALUES ('$name','$image')");
-                        $id = "#" . $conn->insert_id . "#";
+                        echo "No name";
                     }
-                    //Si el id de la skill no está en la lista de skills, la añadimos
-                    if (strpos($_SESSION['current_skills'], $id) === false) {
-                        $_SESSION['current_skills'] .= "$id:$range;";
-                    }
-
                     //Separamos $_SESSION['current_skills'] en un array
                 }
+
                 break;
             case "updateSkills":
                 if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
@@ -1803,7 +2519,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['possible_act_skills'] = $possible_act_skills;
                     echo json_encode($_SESSION['possible_act_skills']);
                     if ($_SESSION['current_activity'] == "") {
-                ?>
+                    ?>
                         <!DOCTYPE html>
                         <html lang="en">
 
@@ -1811,17 +2527,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>New Activity</title>
-                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
-                        <link rel="stylesheet" href="assets/style/style.css" />
-                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                            <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
                         </head>
 
                         <body>
-                            <button onclick='action("goProject")'>back</button>
-                            <input id="name" type="text" placeholder="name">
-                            <textarea id="description" placeholder="description"></textarea>
-                            <div id="skills">
+                            <?php
+                            //Cargamos el header
+                            $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                            $row = $result->fetch_assoc();
+                            uploadHeader($_SESSION['id'], $row['name'], $row['surname'], $row['user'], $row['email']);
+                            ?>
+                            <section id="main">
+                                <div class="nav">
+                                    <i class='bx bx-undo' onclick='action("goProject")'></i>
+                                    <div id="nav-extra"></div>
+                                </div>
+                                <div class="title"><input id="name" type="text" placeholder="Activity name"></div>
+                                <div class="edit-desc">
+                                    <textarea id="description" placeholder="Introduce this activity description..."></textarea>
+                                </div>
+                                <h2>Skills</h2>
+                                <hr class="skill">
                                 <?php
                                 //Recorremos el array de skills
                                 foreach ($possible_act_skills as $key => $value) {
@@ -1833,30 +2565,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     $src = $row['src'];
                                     $path = "assets/skills/black/";
                                     //Imprimimos la skill
-                                    echo "<div>";
-                                    echo "<img src='$domain$path$src' alt='$name'>";
-                                    echo "<p>$name</p>";
-                                    echo "<input id='#$id#' type='range' min='0' max='100' value='0' block='$value->possible'>";
-                                    echo "</div>";
+                                ?>
+                                    <div class="edit-percent">
+                                        <input id=<?php echo "'#$id#'"; ?> type="range" class="skill-percent" min="0" max="100" value="0" block=<?php echo "'$value->possible'"; ?>>
+                                        <div class="edit-percent-inner">
+                                            <div><img src=<?php echo "'$domain$path$src'"; ?> alt="Skill_icon">
+                                                <p><?php echo "$name"; ?></p>
+                                            </div>
+                                            <div>
+                                                <p class="percentage-display">0%</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php
                                 }
 
                                 ?>
-                            </div>
-                            <button onclick="saveActivity()">Save Activity</button>
+                                <div class="save_button_container">
+                                    <button class="save_button activity" onclick="saveActivity()"><i class='bx bxs-save'></i>Save</button>
+                                </div>
+                            </section>
+                            <script src="limitblock.js"></script>
                         </body>
                         <?php include_once "scripts.php"; ?>
                         <script>
                             function saveActivity() {
                                 let name = document.getElementById("name").value;
                                 let description = document.getElementById("description").value;
-                                let skills = document.getElementById("skills").children;
                                 var skillList = "";
-                                for (let i = 0; i < skills.length; i++) {
-                                    let skill = skills[i];
-                                    let id = skill.children[2].id;
-                                    let range = skill.children[2].value;
-                                    skillList += id + ":" + range + ";";
-                                }
+                                var skills = document.querySelectorAll(".skill-percent");
+                                skills.forEach(skill => {
+                                    skillList += "#" + skill.id + ":" + skill.value + ";";
+                                });
+
                                 fetchNispera({
                                     name: "action",
                                     value: "saveActivity"
@@ -1884,7 +2625,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         //Obtenemos el nombre i la descripción de la actividad
                         $result = $conn->query("SELECT name, description FROM activities WHERE id = '$id'");
                         $row = $result->fetch_assoc();
-                        $name = $row['name'];
+                        $actname = $row['name'];
                         $description = $row['description'];
                         //Obtenemos las skills de la actividad
                         $result = $conn->query("SELECT skill_id, percentage FROM act_skills WHERE activity_id = '$id'");
@@ -1903,67 +2644,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>Edit <?php echo $name; ?></title>
-                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
-                        <link rel="stylesheet" href="assets/style/style.css" />
-                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                            <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
                         </head>
 
                         <body>
-                            <button onclick='action("goProject")'>back</button>
-                            <input id="name" type="text" placeholder="name" value=<?php echo "\"$name\""; ?>>
-                            <textarea id="description" placeholder="description"><?php echo $description; ?></textarea>
-                            <div id="skills">
+                            <?php
+                            //Cargamos el header
+                            $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                            $row = $result->fetch_assoc();
+                            uploadHeader($_SESSION['id'], $row['name'], $row['surname'], $row['user'], $row['email']);
+                            ?>
+                            <section id="main">
+                                <div class="nav">
+                                    <i class='bx bx-undo' onclick='action("goActivity")'></i>
+                                    <div id="nav-extra"></div>
+                                </div>
+                                <div class="title"><input id="name" type="text" placeholder="name" value=<?php echo "\"$actname\""; ?>></div>
+                                <div class="edit-desc">
+                                    <textarea id="description" placeholder="Introduce this activity description..."><?php echo $description; ?></textarea>
+                                </div>
+                                <h2>Skills</h2>
+                                <hr class="skill">
                                 <?php
                                 //Obtenemos las skills del proyecto
-                                $result = $conn->query("SELECT skill_id FROM project_skills WHERE project_id = '{$_SESSION['current_project']}'");
+                                $result_project_skills = $conn->query("SELECT skill_id FROM project_skills WHERE project_id = '{$_SESSION['current_project']}'");
+
                                 //Recorremos las skills del proyecto
-                                while ($row = $result->fetch_assoc()) {
-                                    $id = $row['skill_id'];
+                                while ($row_project_skills = $result_project_skills->fetch_assoc()) {
+                                    $id = $row_project_skills['skill_id'];
                                     $possible = 0;
+
+                                    // Buscamos en $possible_act_skills
                                     foreach ($possible_act_skills as $key => $value) {
                                         if ($value->id == $id) {
                                             $possible = $value->possible;
                                         }
                                     }
-                                    //Obtenemos el valor de la actual skill
+
+                                    // Buscamos en $actual_skills
                                     $actual = 0;
                                     foreach ($actual_skills as $key => $value2) {
                                         if ($value2->id == $id) {
                                             $actual = $value2->percentage;
                                         }
                                     }
-                                    //Obtenemos el nombre i la imagen de la skill
-                                    $result = $conn->query("SELECT name, src FROM skills WHERE id = '$id'");
-                                    $row = $result->fetch_assoc();
-                                    $name = $row['name'];
-                                    $src = $row['src'];
-                                    $path = "assets/skills/black/";
-                                    //Imprimimos la skill
-                                    echo "<div>";
-                                    echo "<img src='$domain$path$src' alt='$name'>";
-                                    echo "<p>$name</p>";
-                                    echo "<input id='#$id#' type='range' min='0' max='100' value='$actual' block='" . ($possible + $actual) . "'>";
-                                    echo "</div>";
-                                }
 
+                                    //Obtenemos el nombre i la imagen de la skill
+                                    $result_skill_info = $conn->query("SELECT name, src FROM skills WHERE id = '$id'");
+                                    $row_skill_info = $result_skill_info->fetch_assoc();
+                                    $name = $row_skill_info['name'];
+                                    $src = $row_skill_info['src'];
+                                    $path = "assets/skills/black";
+
+                                    //Imprimimos la skill
                                 ?>
-                            </div>
-                            <button onclick="saveActivity()">Save Activity</button>
+                                    <div class="edit-percent">
+                                        <input id="<?php echo "#$id"; ?>" type="range" class="skill-percent" min="0" max="100" value="<?php echo $actual; ?>" block="<?php echo ($possible + $actual); ?>">
+                                        <div class="edit-percent-inner">
+                                            <div>
+                                                <img src="<?php echo "$domain$path/$src"; ?>" alt="Skill_icon">
+                                                <p><?php echo $name; ?></p>
+                                            </div>
+                                            <div>
+                                                <p class="percentage-display"><?php echo "$actual%"; ?></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php
+                                }
+                                ?>
+                                <div class="save_button_container">
+                                    <button class="save_button activity" onclick="saveActivity()"><i class='bx bxs-save'></i>Save</button>
+                                </div>
+                            </section>
+                            <script src="limitblock.js"></script>
                         </body>
                         <?php include_once "scripts.php"; ?>
                         <script>
                             function saveActivity() {
                                 let name = document.getElementById("name").value;
                                 let description = document.getElementById("description").value;
-                                let skills = document.getElementById("skills").children;
                                 var skillList = "";
-                                for (let i = 0; i < skills.length; i++) {
-                                    let skill = skills[i];
-                                    let id = skill.children[2].id;
-                                    let range = skill.children[2].value;
-                                    skillList += id + ":" + range + ";";
-                                }
+                                //Cargamos las skills
+                                var skills = document.querySelectorAll(".skill-percent");
+                                skills.forEach(skill => {
+                                    skillList += "#" + skill.id + ":" + skill.value + ";";
+                                });
+
                                 fetchNispera({
                                     name: "action",
                                     value: "saveActivity"
@@ -2124,11 +2897,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                 }
+
                 if ($_SESSION['current_activity'] != "") {
                     //Obtenemos el nombre de la actividad
                     $result = $conn->query("SELECT name, status, description, project_id FROM activities WHERE id = '{$_SESSION['current_activity']}'");
                     $row = $result->fetch_assoc();
-                    $name = $row['name'];
+                    $activityname = $row['name'];
                     $status = $row['status'];
                     $description = $row['description'];
 
@@ -2144,20 +2918,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <head>
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title><?php echo $name; ?></title>
-                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
-                        <link rel="stylesheet" href="assets/style/style.css" />
-                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                            <title><?php echo $activityname; ?></title>
+                            <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
                         </head>
 
                         <body>
-                            <button onclick="action('goProject')">back</button>
-                            <button onclick="action('editActivity')">Edit Activity</button>
-                            <h2><?php echo $project_name ?></h2>
-                            <h1><?php echo $name ?></h1>
-                            <p><?php echo $description ?></p>
-                            <div id="skills">
+                            <?php
+                            //Cargamos el header
+                            $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                            $row = $result->fetch_assoc();
+                            $name = $row['name'];
+                            $surname = $row['surname'];
+                            $email = $row['email'];
+                            $username = $row['user'];
+                            uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
+                            ?>
+                            <section id="main">
+                                <!-- NAV -->
+                                <div class="nav">
+                                    <i class='bx bx-undo' onclick="action('goProject')"></i>
+                                    <div id="nav-extra" onclick="action('editActivity')"><i class='bx bxs-edit-alt'></i>
+                                        <p>Edit <span id="nav-extra-type">Activity</span></p>
+                                    </div>
+                                </div>
+                                <div class="double-title">
+                                    <span><?php echo $project_name ?></span>
+                                    <p class="activity-color"><?php echo $activityname ?></p>
+                                </div>
+                                <h2>Description</h2>
+                                <hr class="activity">
+                                <p class="act-desc"><?php echo $description ?></p>
+                                <h2>Skills</h2>
+                                <hr class="skill">
+
                                 <?php
                                 //Obtenemos las skills de la actividad
                                 $result = $conn->query("SELECT skill_id, percentage FROM act_skills WHERE activity_id = '{$_SESSION['current_activity']}'");
@@ -2172,87 +2971,136 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     $src = $row2['src'];
                                     $path = "assets/skills/black/";
                                     //Imprimimos la skill
-                                    echo "<div>";
-                                    echo "<img src='$domain$path$src' alt='$name'>";
-                                    echo "<p>$name</p>";
-                                    echo "<input id='#$id#' type='range' min='0' max='100' value='$percentage'>";
-                                    echo "</div>";
-                                }
                                 ?>
-                            </div>
-                            <h2>Teams</h2>
-                            <button onclick="action('goTeams')">Teams</button>
-                            <div id="teams">
+                                    <div class="percent_tag skill ">
+                                        <div><img src=<?php echo "'$domain$path$src'"; ?> alt="Skill_icon">
+                                            <p><?php echo "$name"; ?></p>
+                                        </div>
+                                        <div>
+                                            <p class="percentage-display"><?php echo "$percentage"; ?>%</p>
+                                        </div>
+                                    </div>
                                 <?php
-                                //Obtenemos los equipos de la actividad
-                                $result = $conn->query("SELECT id, name FROM teams WHERE activity_id = '{$_SESSION['current_activity']}'");
-                                //Recorremos los equipos
-                                while ($row = $result->fetch_assoc()) {
-                                    $id = $row['id'];
-                                    $name = $row['name'];
-                                    //Obtenemos los miembros del equipo
-                                    $result2 = $conn->query("SELECT user_id FROM teammembers WHERE team_id = '$id'");
-                                    //Recorremos los miembros
-                                    $members = [];
-                                    while ($row2 = $result2->fetch_assoc()) {
-                                        $userid = $row2['user_id'];
-                                        //Obtenemos el nombre del usuario
-                                        $result3 = $conn->query("SELECT name, surname FROM users WHERE id = '$userid'");
-                                        $row3 = $result3->fetch_assoc();
-                                        $name2 = $row3['name'];
-                                        $surname = $row3['surname'];
-                                        array_push($members, (object) array('id' => $userid, 'name' => $name2, 'surname' => $surname));
-                                    }
-                                    //Obtenemos el número de miembros
-                                    $members_count = count($members);
-                                    //Si no hay miembros, borramos el team
-                                    if ($members_count == 0) {
-                                        $conn->query("DELETE FROM teams WHERE id = '$id'");
-                                    } else {
-                                        //Imprimimos el team
-                                        echo "<div>";
-                                        echo "<h3>$name</h3>";
-                                        echo "<p>#$members_count members</p>";
-                                        echo "<div class='members'>";
-                                        foreach ($members as $member) {
-                                            //Obtenemos la imagen del miembro a partir de su id y la función obtainImage
-                                            echo "<img width='50px' height='50px' src='" . obtainImage($member->id) . "' alt=''>";
-                                            echo "<p>$member->name $member->surname</p>";
-                                            //Recorremos las skills de la actividad
-                                            $result3 = $conn->query("SELECT id, skill_id FROM act_skills WHERE activity_id = '{$_SESSION['current_activity']}'");
-                                            //Recorremos las skills
-                                            while ($row3 = $result3->fetch_assoc()) {
-                                                $act_skill_id = $row3['id'];
-                                                $id = $row3['skill_id'];
-                                                //Obtenemos el nombre i la imagen de la skill
-                                                $result4 = $conn->query("SELECT name, src FROM skills WHERE id = '$id'");
-                                                $row4 = $result4->fetch_assoc();
-                                                $name = $row4['name'];
-                                                $src = $row4['src'];
-                                                $path = "assets/skills/black/";
-                                                //Imprimimos la skill
-                                                echo "<div>";
-                                                echo "<img widht='20px' height='20px' src='$domain$path$src' alt='$name'>";
-                                                echo "<p>$name</p>";
-                                                //Observamos si el alumnos tiene una nota en esa act_skills_marks
-                                                $result4 = $conn->query("SELECT mark FROM act_skills_marks WHERE act_skill_id = '$act_skill_id' AND user_id = '$member->id'");
-                                                if ($result4->num_rows > 0) {
-                                                    $row4 = $result4->fetch_assoc();
-                                                    $mark = $row4['mark'];
-                                                    echo "<input onchange='changeMark($act_skill_id,$member->id,this.value)' id='skill_mark' type='text' value='$mark'>";
-                                                } else {
-                                                    echo "<input onchange='changeMark($act_skill_id,$member->id,this.value)' id='skill_mark' type='text' >";
-                                                }
-                                                echo "</div>";
-                                            }
-                                        }
-                                    }
                                 }
                                 ?>
-                            </div>
+                                <h2>Students</h2>
+                                <hr class="team">
+
+                                <div class="scroll_tag team" onclick="handleClick(this)" onmousedown="handleStart(this)" ontouchstart="handleStart(this)" action="goTeams">
+                                    <h3>Teams</h3>
+                                    <i class='bx bx-chevrons-right'></i>
+                                </div>
+                                <div class="with-filter">
+                                    <h2>Evaluate</h2>
+                                    <i class='bx bxs-filter-alt bx-flip-horizontal' onclick="filterSort('evaluateteams', 'sort')"></i>
+                                </div>
+                                <hr class="team">
+                                <div id="evaluateteams">
+                                    <?php
+                                    //Obtenemos los equipos de la actividad
+                                    $result = $conn->query("SELECT id, name FROM teams WHERE activity_id = '{$_SESSION['current_activity']}'");
+                                    //Recorremos los equipos
+                                    while ($row = $result->fetch_assoc()) {
+                                        $id = $row['id'];
+                                        $name = $row['name'];
+                                        //Obtenemos los miembros del equipo
+                                        $result2 = $conn->query("SELECT user_id FROM teammembers WHERE team_id = '$id'");
+                                        //Recorremos los miembros
+                                        $members = [];
+                                        while ($row2 = $result2->fetch_assoc()) {
+                                            $userid = $row2['user_id'];
+                                            //Obtenemos el nombre del usuario
+                                            $result3 = $conn->query("SELECT name, surname FROM users WHERE id = '$userid'");
+                                            $row3 = $result3->fetch_assoc();
+                                            $name2 = $row3['name'];
+                                            $surname = $row3['surname'];
+                                            array_push($members, (object) array('id' => $userid, 'name' => $name2, 'surname' => $surname));
+                                        }
+                                        //Obtenemos el número de miembros
+                                        $members_count = count($members);
+                                        //Si no hay miembros, borramos el team
+                                        if ($members_count == 0) {
+                                            $conn->query("DELETE FROM teams WHERE id = '$id'");
+                                        } else {
+                                            //Imprimimos el team
+                                    ?>
+                                            <div class="sort">
+                                                <!-- TEAM NAME -->
+                                                <div class="team teams-table" onclick=<?php echo "'openTeam($id, this)'"; ?>>
+                                                    <p><?php echo "$name"; ?></p>
+                                                    <p>#<?php echo "$members_count"; ?></p>
+                                                    <div><i class="bx bx-chevron-right"></i></div>
+                                                </div>
+                                                <div class="height-0" id=<?php echo "'team$id'"; ?>>
+                                                    <?php
+                                                    foreach ($members as $member) {
+                                                    ?>
+                                                        <div class="generic generic-table" onclick=<?php echo "'openUser($member->id, this)'"; ?>>
+                                                            <div>
+                                                                <img src=<?php $img = obtainImage($member->id);
+                                                                            echo "'$img'"; ?> alt="user_portrait" id="portrait">
+                                                                <p><?php echo "$member->name $member->surname"; ?></p>
+                                                            </div>
+                                                            <div><i class="bx bx-chevron-right"></i></div>
+                                                        </div>
+                                                        <div class="white height-0 user-grades" id=<?php echo "'$member->id'"; ?>>
+
+                                                            <?php
+
+                                                            //Recorremos las skills de la actividad
+                                                            $result3 = $conn->query("SELECT id, skill_id FROM act_skills WHERE activity_id = '{$_SESSION['current_activity']}'");
+                                                            //Recorremos las skills
+                                                            while ($row3 = $result3->fetch_assoc()) {
+                                                                $act_skill_id = $row3['id'];
+                                                                $id = $row3['skill_id'];
+                                                                //Obtenemos el nombre i la imagen de la skill
+                                                                $result4 = $conn->query("SELECT name, src FROM skills WHERE id = '$id'");
+                                                                $row4 = $result4->fetch_assoc();
+                                                                $name = $row4['name'];
+                                                                $src = $row4['src'];
+                                                                $path = "assets/skills/black/";
+                                                            ?>
+                                                                <div class="edit-grades">
+                                                                    <div>
+                                                                        <img src=<?php echo "'$domain$path$src'"; ?> alt="Skill_icon">
+                                                                        <p><?php echo "$name"; ?></p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <?php
+                                                                        $result4 = $conn->query("SELECT mark FROM act_skills_marks WHERE act_skill_id = '$act_skill_id' AND user_id = '$member->id'");
+                                                                        if ($result4->num_rows > 0) {
+                                                                            $row4 = $result4->fetch_assoc();
+                                                                            $mark = $row4['mark'];
+                                                                            echo "<input placeholder='--' maxlength='4' onchange='changeMark($act_skill_id,$member->id,this.value)' oninput='validateInput(this)' type='text' value='$mark'>";
+                                                                        } else {
+                                                                            echo "<input placeholder='--' maxlength='4' onchange='changeMark($act_skill_id,$member->id,this.value)' oninput='validateInput(this)' type='text' >";
+                                                                        }
+                                                                        ?>
+                                                                        <p> / 10</p>
+                                                                    </div>
+                                                                </div>
+                                                <?php
+                                                            }
+                                                            echo "</div>";
+                                                        }
+                                                        echo "</div></div>";
+                                                    }
+                                                }
+                                                ?>
+                                                        </div>
+                            </section>
+                            <script src="scroll.js"></script>
+                            <script src="teams.js"></script>
                         </body>
                         <?php include_once "scripts.php"; ?>
                         <script>
+                            function validateInput(input) {
+                                let value = input.value;
+                                if (isNaN(value) || value < 0 || value > 10 || value == "00") {
+                                    input.value = input.value.slice(0, -1);
+                                }
+                            }
+
                             function changeMark(act_skill_id, userid, mark) {
                                 fetchNispera({
                                     name: "action",
@@ -2273,6 +3121,210 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </script>
 
                         </html>
+                    <?php
+                    } else {
+                        //Obtenemos el nombre de la actividad
+                        $result = $conn->query("SELECT name, status, description, project_id FROM activities WHERE id = '{$_SESSION['current_activity']}'");
+                        $row = $result->fetch_assoc();
+                        $activityname = $row['name'];
+                        $status = $row['status'];
+                        $description = $row['description'];
+
+                        //Obtenemos el nombre del proyecto
+                        $result = $conn->query("SELECT name FROM projects WHERE id = '{$row['project_id']}'");
+                        $row = $result->fetch_assoc();
+                        $project_name = $row['name'];
+                    ?>
+                        <!DOCTYPE html>
+                        <html lang="en">
+
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title><?php echo $activityname; ?></title>
+                            <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
+                        </head>
+
+                        <body>
+                            <?php
+                            //Cargamos el header
+                            $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                            $row = $result->fetch_assoc();
+                            $name = $row['name'];
+                            $surname = $row['surname'];
+                            $email = $row['email'];
+                            $username = $row['user'];
+                            uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
+                            ?>
+
+                            <section id="main">
+                                <!-- NAV -->
+                                <div class="nav">
+                                    <i class='bx bx-undo' onclick="action('goProject')"></i>
+                                    <div id="nav-extra"></div>
+                                </div>
+
+                                <div class="double-title">
+                                    <span><?php echo $project_name ?></span>
+                                    <p class="activity-color"><?php echo $activityname ?></p>
+                                </div>
+                                <h2>Description</h2>
+                                <hr class="activity">
+                                <p class="act-desc"><?php echo $description ?></p>
+                                <h2>Skills</h2>
+                                <hr class="skill">
+
+                                <?php
+                                //Obtenemos las skills de la actividad
+                                $result = $conn->query("SELECT skill_id, percentage FROM act_skills WHERE activity_id = '{$_SESSION['current_activity']}'");
+                                //Recorremos las skills
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['skill_id'];
+                                    $percentage = $row['percentage'];
+                                    //Obtenemos el nombre i la imagen de la skill
+                                    $result2 = $conn->query("SELECT name, src FROM skills WHERE id = '$id'");
+                                    $row2 = $result2->fetch_assoc();
+                                    $name = $row2['name'];
+                                    $src = $row2['src'];
+                                    $path = "assets/skills/black/";
+                                    //Imprimimos la skill
+                                ?>
+                                    <div class="percent_tag skill ">
+                                        <div><img src=<?php echo "'$domain$path$src'"; ?> alt="Skill_icon">
+                                            <p><?php echo "$name"; ?></p>
+                                        </div>
+                                        <div>
+                                            <p class="percentage-display"><?php echo "$percentage"; ?>%</p>
+                                        </div>
+                                    </div>
+                                <?php
+                                }
+                                ?>
+                                <h2>Your Team</h2>
+                                <hr class="team">
+                                <?php
+                                //Obtenemos el team de esta actividad en el que se encuentra el usuario
+                                $result = $conn->query("SELECT team_id FROM teammembers WHERE user_id = '$_SESSION[id]' AND team_id IN (SELECT id FROM teams WHERE activity_id = '{$_SESSION['current_activity']}')");
+                                //Si el usuario tiene un team
+                                if ($result->num_rows > 0) {
+                                    //Obtenemos el id del team
+                                    $row = $result->fetch_assoc();
+                                    $teamid = $row['team_id'];
+                                    //Obtenemos el nombre del team
+                                    $result = $conn->query("SELECT name FROM teams WHERE id = '$teamid'");
+                                    $row = $result->fetch_assoc();
+                                    $teamname = $row['name'];
+                                    //Obtenemos el número de miembros que tiene el team
+                                    $result = $conn->query("SELECT COUNT(*) AS count FROM teammembers WHERE team_id = '$teamid'");
+                                    $row = $result->fetch_assoc();
+                                    $members_count = $row['count'];
+                                    //Imprimimos el team
+                                ?>
+                                    <div class="team teams-table" onclick="openTeam(1, this)">
+                                        <p><?php echo "$teamname"; ?></p>
+                                        <p>#<?php echo "$members_count"; ?></p>
+                                        <div><i class="bx bx-chevron-right"></i></div>
+                                    </div>
+                                    <div class="height-0" id="team1">
+                                        <?php
+                                        //Obtenemos los miembros del team
+                                        $result = $conn->query("SELECT user_id FROM teammembers WHERE team_id = '$teamid'");
+                                        //Recorremos los miembros
+                                        while ($row = $result->fetch_assoc()) {
+                                            $userid = $row['user_id'];
+                                            //Obtenemos el nombre del usuario
+                                            $result2 = $conn->query("SELECT name, surname, user, email FROM users WHERE id = '$userid'");
+                                            $row2 = $result2->fetch_assoc();
+                                            $name = $row2['name'];
+                                            $surname = $row2['surname'];
+                                            $user = $row2['user'];
+                                            $email = $row2['email'];
+                                        ?>
+                                            <div class="generic generic-table" onclick=<?php echo "'openUser($userid, this)'"; ?>>
+                                                <div>
+                                                    <img src=<?php $img = obtainImage($userid);
+                                                                echo "'$img'" ?> alt="user_portrait" id="portrait">
+                                                    <p><?php echo "$name $surname"; ?></p>
+                                                </div>
+                                                <div><i class="bx bx-chevron-right"></i></div>
+                                            </div>
+                                            <div class="white height-0 user-options" id=<?php echo "'$userid'"; ?>>
+                                                <div>
+                                                    <p>Username:<span><?php echo "$user"; ?></span></p>
+                                                    <p>Email:<span><?php echo "$email"; ?></span></p>
+                                                </div>
+                                                <div></div>
+                                            </div>
+                                        <?php
+                                        }
+                                        ?>
+                                    </div>
+                                <?php
+                                } else {
+                                    echo "<p>You don't have a team</p>";
+                                }
+                                ?>
+                                <h2>Skill Marks</h2>
+                                <hr class="grade">
+
+                                <div class="white user-grades">
+                                    <?php
+                                    //Obtenemos las skills de esta actividad y las recorremos
+                                    $result = $conn->query("SELECT id, skill_id FROM act_skills WHERE activity_id = '{$_SESSION['current_activity']}'");
+                                    while ($row = $result->fetch_assoc()) {
+                                        $act_skill_id = $row['id'];
+                                        $id = $row['skill_id'];
+                                        //Obtenemos el nombre i la imagen de la skill
+                                        $result2 = $conn->query("SELECT name, src FROM skills WHERE id = '$id'");
+                                        $row2 = $result2->fetch_assoc();
+                                        $name = $row2['name'];
+                                        $src = $row2['src'];
+                                        $path = "assets/skills/black/";
+                                        //Buscamos la nota del usuario en esta skill
+                                        $result2 = $conn->query("SELECT mark FROM act_skills_marks WHERE act_skill_id = '$act_skill_id' AND user_id = '$_SESSION[id]'");
+                                        if ($result2->num_rows > 0) {
+                                            $row2 = $result2->fetch_assoc();
+                                            $mark = $row2['mark'];
+                                            echo "<div class='show-grades'>
+                                                    <div>
+                                                        <img src='$domain$path$src' alt='Skill_icon'>
+                                                        <p>$name</p>
+                                                    </div>
+                                                    <div>
+                                                    <span>$mark</span>
+                                                        <p> / 10</p>
+                                                    </div>
+                                                </div>";
+                                        } else {
+                                            echo "<div class='show-grades'>
+                                                    <div>
+                                                        <img src='$domain$path$src' alt='Skill_icon'>
+                                                        <p>$name</p>
+                                                    </div>
+                                                    <div>
+                                                    <span>--</span>
+                                                        <p> / 10</p>
+                                                    </div>
+                                                </div>";
+                                        }
+                                    }
+
+                                    ?>
+                                </div>
+                            </section>
+                            <script src="scroll.js"></script>
+                            <script src="teams.js"></script>
+                        </body>
+                        <?php include_once "scripts.php"; ?>
+
+                        </html>
+
                     <?php
                     }
                 }
@@ -2305,7 +3357,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         //Obtenemos el nombre de la actividad
                         $result = $conn->query("SELECT name FROM activities WHERE id = '{$_SESSION['current_activity']}'");
                         $row = $result->fetch_assoc();
-                        $name = $row['name'];
+                        $actname = $row['name'];
                     ?>
                         <!DOCTYPE html>
                         <html lang="en">
@@ -2313,59 +3365,108 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <head>
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title><?php echo $name; ?> Teams</title>
-                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
-                        <link rel="stylesheet" href="assets/style/style.css" />
-                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                            <title><?php echo $actname; ?> Teams</title>
+                            <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
                         </head>
 
                         <body>
-                            <button onclick="action('goActivity')">back</button>
-                            <button onclick="vaction('createTeam');action('goTeams')">Create Team</button>
-                            <div id="teams">
-                                <?php
-                                //Obtenemos todos los teams que hay en la actividad
-                                $result = $conn->query("SELECT id, name FROM teams WHERE activity_id = '{$_SESSION['current_activity']}'");
-                                //Recorremos los teams
-                                while ($row = $result->fetch_assoc()) {
-                                    $id = $row['id'];
-                                    $name = $row['name'];
-                                    //Obtenemos los miembros del team
-                                    $result2 = $conn->query("SELECT user_id FROM teammembers WHERE team_id = '$id'");
-                                    //Recorremos los miembros
-                                    $members = [];
-                                    while ($row2 = $result2->fetch_assoc()) {
-                                        $userid = $row2['user_id'];
-                                        //Obtenemos el nombre del usuario
-                                        $result3 = $conn->query("SELECT name, surname FROM users WHERE id = '$userid'");
-                                        $row3 = $result3->fetch_assoc();
-                                        $name2 = $row3['name'];
-                                        $surname = $row3['surname'];
-                                        array_push($members, (object) array('id' => $userid, 'name' => $name2, 'surname' => $surname));
-                                    }
-                                    //Obtenemos el número de miembros
-                                    $members_count = count($members);
-                                    //Imprimimos el team
-                                    echo "<div>";
-                                    echo "<input type='text' value='$name' onchange='teamName($id,this.value)'>";
-                                    echo "<p>#$members_count members</p>";
-                                    echo "<div class='members'>";
-                                    foreach ($members as $member) {
-                                        //Obtenemos la imagen del miembro a partir de su id y la función obtainImage
-                                        echo "<img height='50px' width='50px' src='" . obtainImage($member->id) . "' alt=''>";
-                                        echo "<p>$member->name $member->surname</p>";
-                                        echo "<button onclick='deleteMember(\"$id\",\"$member->id\")'>Delete</button>";
-                                    }
-                                    echo "<button onclick='addMember(\"$id\")'>+</button>";
-                                    echo "</div>";
-                                    echo "</div>";
-                                }
-                                ?>
-                            </div>
-                            <div id="unteamed">
+                            <?php
+                            //Cargamos el header
+                            $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                            $row = $result->fetch_assoc();
+                            $name = $row['name'];
+                            $surname = $row['surname'];
+                            $email = $row['email'];
+                            $username = $row['user'];
+                            uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
+                            ?>
+                            <section id="main">
+                                <div class="nav">
+                                    <i class='bx bx-undo' onclick="action('goActivity')"></i>
+                                    <div id="nav-extra"></div>
+                                </div>
+                                <div class="double-title">
+                                    <span><?php echo "$actname"; ?></span>
+                                    <p class="team-color">Teams</p>
+                                </div>
 
-                            </div>
+                                <h2>Manage</h2>
+                                <hr class="team">
+
+                                <div class="tag team" onclick="vaction('createTeam');action('goTeams')">
+                                    <h3>Create Team</h3>
+                                    <i class='bx bx-plus'></i>
+                                </div>
+
+                                <h2>Teams</h2>
+                                <hr class="team">
+                                <div id="teams">
+                                    <?php
+                                    //Obtenemos todos los teams que hay en la actividad
+                                    $result = $conn->query("SELECT id, name FROM teams WHERE activity_id = '{$_SESSION['current_activity']}'");
+                                    //Recorremos los teams
+                                    while ($row = $result->fetch_assoc()) {
+                                        $id = $row['id'];
+                                        $name = $row['name'];
+                                        //Obtenemos los miembros del team
+                                        $result2 = $conn->query("SELECT user_id FROM teammembers WHERE team_id = '$id'");
+                                        //Recorremos los miembros
+                                        $members = [];
+                                        while ($row2 = $result2->fetch_assoc()) {
+                                            $userid = $row2['user_id'];
+                                            //Obtenemos el nombre del usuario
+                                            $result3 = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$userid'");
+                                            $row3 = $result3->fetch_assoc();
+                                            $name2 = $row3['name'];
+                                            $surname = $row3['surname'];
+                                            $email = $row3['email'];
+                                            $username = $row3['user'];
+                                            array_push($members, (object) array('id' => $userid, 'name' => $name2, 'surname' => $surname, 'email' => $email, 'username' => $username));
+                                        }
+                                        //Obtenemos el número de miembros
+                                        $members_count = count($members);
+                                        //Imprimimos el team
+                                    ?>
+                                        <div class=<?php echo (($id % 2) != 0) ? "'teams-table team'" : "'teams-table team-2'"; ?> onclick=<?php echo "'openTeam($id, this)'"; ?>>
+                                            <?php echo "<input placeholder='Team name' type='text' value='$name' onchange='teamName($id,this.value)'>"; ?>
+                                            <p>#<?php echo "$members_count"; ?></p>
+                                            <div><i class="bx bx-chevron-right"></i></div>
+                                        </div>
+                                        <div class="height-0" id=<?php echo "'team$id'"; ?>>
+
+                                            <?php
+                                            foreach ($members as $member) {
+                                            ?>
+                                                <div class="generic generic-table" onclick=<?php echo "'openUser($member->id, this)'"; ?>>
+                                                    <div><img src=<?php $img = obtainImage($member->id);
+                                                                    echo "'$img'"; ?> alt="user_portrait" id="portrait">
+                                                        <p><?php echo "$member->name $member->surname"; ?></p>
+                                                    </div>
+                                                    <div><i class="bx bx-chevron-right"></i></div>
+                                                </div>
+                                                <div class="white height-0 user-options" id=<?php echo "'$member->id'"; ?>>
+                                                    <div>
+                                                        <p>Username:<span><?php echo "$member->username"; ?></span></p>
+                                                        <p>Email:<span><?php echo "$member->email"; ?></span></p>
+                                                    </div>
+                                                    <div onclick=<?php echo "'deleteMember(\"$id\",\"$member->id\")'"; ?>><i class='bx bxs-user-minus'></i>
+                                                        <p>Remove from group</p>
+                                                    </div>
+                                                </div>
+                                        <?php
+                                            }
+                                            echo "<div class='white add' onclick='addMember(\"$id\")'><i class='bx bx-plus fs30'></i></div>";
+                                            echo "</div>";
+                                        }
+                                        ?>
+                                        </div>
+                            </section>
                         </body>
                         <?php include_once "scripts.php"; ?>
                         <script>
@@ -2439,10 +3540,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>Unteamed students</title>
-                            <link rel="stylesheet" href="assets/style/style.css.css" media="print" onload="this.onload=null;this.media='all'">
-                        <link rel="stylesheet" href="assets/style/style.css" />
-                        <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-                        <noscript><link rel="stylesheet" href="assets/style/style.css"></noscript>
+                            <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                            <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                            <link rel="stylesheet" href="assets/style/style.css" />
+                            <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                            <noscript>
+                                <link rel="stylesheet" href="assets/style/style.css">
+                            </noscript>
                         </head>
 
                         <body>
@@ -2485,7 +3589,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </script>
 
                         </html>
-<?php
+                <?php
                     }
                 }
                 break;
@@ -2575,11 +3679,148 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 } else {
                                     //Añadimos la nota
                                     $conn->query("INSERT INTO act_skills_marks (act_skill_id,user_id,mark) VALUES ('$act_skill_id','$userid','$mark')");
+                                    //Cambiamos el estado de la actividad a "close"
+                                    $conn->query("UPDATE activities SET status = 'close' WHERE id = '$activity_id'");
                                 }
                             }
                         }
                     }
                 }
+                break;
+            case "goOverall":
+                ?>
+                <!DOCTYPE html>
+                <html lang="en">
+
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Hola</title>
+                </head>
+
+                <body>
+                    uwu
+                </body>
+
+                </html>
+            <?php
+                break;
+            case "goLeaderboard":
+                //Obtenemos el nombre del proyecto
+                $result = $conn->query("SELECT name FROM projects WHERE id = '{$_SESSION['current_project']}'");
+                $row = $result->fetch_assoc();
+                $project_name = $row['name'];
+            ?>
+                <!DOCTYPE html>
+                <html lang="en">
+
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Leaderboard</title>
+                    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                    <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                    <link rel="stylesheet" href="assets/style/style.css" />
+                    <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                    <noscript>
+                        <link rel="stylesheet" href="assets/style/style.css">
+                    </noscript>
+                </head>
+
+                <body>
+                    <?php
+                    //Cargamos el header
+                    $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                    $row = $result->fetch_assoc();
+                    $name = $row['name'];
+                    $surname = $row['surname'];
+                    $email = $row['email'];
+                    $username = $row['user'];
+                    uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
+                    ?>
+                    <section id="main">
+                        <div class="nav">
+                            <i class='bx bx-undo' onclick="action('goProject')"></i>
+                            <div id="nav-extra"></div>
+                        </div>
+                        <div class="double-title">
+                            <span><?php echo "$project_name"; ?></span>
+                            <p class="leaderboard-color">Ranking</p>
+                        </div>
+                        <?php
+                        // Arreglo para almacenar la información de los usuarios con sus notas
+                        $usersWithMarks = array();
+                        $result = $conn->query("SELECT id, name, surname FROM users WHERE id IN (SELECT user_id FROM project_users WHERE project_id = '{$_SESSION['current_project']}') AND role = 'student'");
+                        // Recorremos los usuarios
+                        while ($row = $result->fetch_assoc()) {
+                            $idusuario = $row['id'];
+                            $name = $row['name'];
+                            $surname = $row['surname'];
+
+                            // Obtenemos la nota del usuario usando la función studentMark
+                            $mark = studentMark($idusuario, $_SESSION['current_project']);
+
+                            // Almacenamos la información en el arreglo
+                            $usersWithMarks[] = array('id' => $idusuario, 'name' => $name, 'surname' => $surname, 'mark' => $mark);
+                        }
+                        // Ordenamos el arreglo en función de la nota de mayor a menor
+                        usort($usersWithMarks, function ($a, $b) {
+                            return $b['mark'] <=> $a['mark'];
+                        });
+
+                        // Tomamos los primeros 3 usuarios con mayor nota
+                        $top3Users = array_slice($usersWithMarks, 0, 3);
+                        ?>
+                        <div id="podium">
+                            <?php
+                            //Si en la array top3Users hay existe un usuario en la posición 0
+                            if (isset($top3Users[0])) {
+                                //Obtenemos el id del usuario
+                                $id = $top3Users[0]['id'];
+                                //Obtenemos la imagen del usuario
+                                $img = obtainImage($id);
+                                //Imprimimos el primer puesto
+                                echo "<div id='first-place'>
+                                        <img src='assets/elements/first-place.png' alt='Crown'>
+                                        <img src='$img' alt='User'>
+                                        <p>{$top3Users[0]['name']} {$top3Users[0]['surname']}</p>
+                                    </div>";
+                            }
+                            //Si en la array top3Users existe un usuario en la posicion 1
+
+                            if (isset($top3Users[1])) {
+                                //Obtenemos el id del usuario
+                                $id = $top3Users[1]['id'];
+                                //Obtenemos la imagen del usuario
+                                $img = obtainImage($id);
+                                //Imprimimos el segundo puesto
+                                echo "<div id='second-place'>
+                                        <img src='assets/elements/second-place.png' alt='Hat'>
+                                        <img src='$img' alt='User'>
+                                        <p>{$top3Users[1]['name']} {$top3Users[1]['surname']}</p>
+                                    </div>";
+                            }
+                            //Si en la array top3Users existe un usuario en la posicion 2
+                            if (isset($top3Users[2])) {
+                                //Obtenemos el id del usuario
+                                $id = $top3Users[2]['id'];
+                                //Obtenemos la imagen del usuario
+                                $img = obtainImage($id);
+                                //Imprimimos el tercer puesto
+                                echo "<div id='third-place'>
+                                        <img src='assets/elements/third-place.png' alt='Cap'>
+                                        <img src='$img' alt='User'>
+                                        <p>{$top3Users[2]['name']} {$top3Users[2]['surname']}</p>
+                                    </div>";
+                            }
+
+                            ?>
+                        </div>
+                    </section>
+                </body>
+
+                </html>
+<?php
                 break;
             default:
                 echo 'Error: Acción no válida.';
