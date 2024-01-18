@@ -136,7 +136,6 @@
             })
             .then(response => response.text())
             .then(content => {
-                console.log(content);
             });
     }
 </script>

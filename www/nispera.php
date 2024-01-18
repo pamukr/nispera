@@ -463,7 +463,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     })
                                     .then(response => response.text())
                                     .then(content => {
-                                        console.log(content);
                                         if (content == "true") {
                                             csvImported(true);
                                         } else {
@@ -1046,7 +1045,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 setTimeout(() => {
                                                     if (done) {
                                                         done = false;
-                                                        console.log(action);
                                                         if (action == "goskills") {
                                                             action("goSkills");
                                                         } else {
@@ -1085,7 +1083,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     name: "id",
                                     value: id
                                 }).then(response => {
-                                    console.log(response);
                                     action("goProject");
                                 });
                             }
@@ -1258,6 +1255,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
                         ?>
                         <section id="main">
+                        <div class="delete-confirm-container">
+                                <div class="delete-confirm">
+                                    <p>Confirm deletion?</p>
+                                    <div>
+                                        <button onclick="vaction('deleteProject'); setTimeout(() => { action('main'); }, 400);">Yes</button>
+                                        <button onclick="confirmDelete(false)">No</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <script>
+                                function confirmDelete(show) {
+                                    let deleteConfirmContainer = document.querySelector(
+                                        ".delete-confirm-container"
+                                    );
+                                    setTimeout(() => {
+                                        if (show) {
+                                            deleteConfirmContainer.style.height = "100%";
+                                        } else {
+                                            deleteConfirmContainer.style.height = "0px";
+                                        }
+                                    }, 300);
+                                }
+                            </script>
                             <div class="nav">
                                 <i class='bx bx-undo' onclick="action('goProject')"></i>
                                 <div id="nav-extra" onclick="changeName()"><i class='bx bxs-save'></i>
@@ -1289,7 +1310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 echo "</div>";
                             }
                             ?>
-                            <div class="delete-button" onclick="action('deleteProject');action('main');">
+                            <div class="delete-button" onclick="confirmDelete(true);">
                                 <i class='bx bxs-eraser'></i>
                                 <p>Delete this <span id="delete-extra-type">Project</span></p>
                             </div>
@@ -1337,7 +1358,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 name: "id",
                                 value: id
                             }).then(response => {
-                                console.log(response);
                                 action("editProject");
                             });
                         }
@@ -1802,7 +1822,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 name: "groups",
                                 value: groups
                             }).then(response => {
-                                console.log(response);
                                 if (response == "true") {
                                     action("goUsers");
                                 }
@@ -2061,7 +2080,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             for (let i = 0; i < inputs.length; i++) {
                                 people += inputs[i].id + ";";
                             }
-                            console.log(people);
                             <?php if (isset($data['create'])) { ?>
                                 fetchNispera({
                                     name: "action",
@@ -2082,7 +2100,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     name: "update",
                                     value: "true"
                                 }).then(response => {
-                                    console.log(response);
                                 });
                                 action("goProject");
                             <?php } ?>
@@ -2441,9 +2458,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 name: "skills",
                                 value: skillList
                             }).then(response => {
-                                console.log(response);
-                            });;
-                            action("goProject");
+                                action("goProject");
+                            });
+                            
                         }
                     </script>
 
@@ -2653,7 +2670,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     name: "skills",
                                     value: skillList
                                 }).then(response => {
-                                    console.log(response);
                                     action("goProject");
                                 });
                             }
@@ -2792,7 +2808,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     name: "skills",
                                     value: skillList
                                 }).then(response => {
-                                    console.log(response);
                                     action("goActivity");
                                 });
                             }
@@ -3169,7 +3184,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     name: "mark",
                                     value: mark
                                 }).then(response => {
-                                    console.log(response);
                                 });
                             }
                         </script>
@@ -3249,7 +3263,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     $path = "assets/skills/black/";
                                     //Imprimimos la skill
                                 ?>
-                                    <div class="percent_tag skill ">
+                                    <div class="percent_tag">
+                                        <div class="percent-filler" percent="<?php echo "$percentage"; ?>"></div>
                                         <div><img src=<?php echo "'$domain$path$src'"; ?> alt="Skill_icon">
                                             <p><?php echo "$name"; ?></p>
                                         </div>
@@ -3372,6 +3387,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     ?>
                                 </div>
                             </section>
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function() {
+                                    let percentFillers = document.querySelectorAll(".percent-filler");
+                                    percentFillers.forEach(function(percentFiller) {
+                                        let percent = percentFiller.getAttribute("percent");
+                                        percentFiller.style.width = percent + "%";
+                                        let percentageDisplay = percentFiller.closest(".percent_tag").querySelector(".percentage-display");
+                                        percentageDisplay.innerText = percent + "%";
+                                    });
+                                });
+                            </script>
                             <script src="scroll.js"></script>
                             <script src="teams.js"></script>
                         </body>
@@ -3652,7 +3678,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     name: "userid",
                                     value: userid
                                 }).then(response => {
-                                    console.log(response);
                                     action("goTeams");
                                 });
                             };
