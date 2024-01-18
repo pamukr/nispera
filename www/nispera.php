@@ -686,7 +686,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <i class='bx bx-undo' onclick='action("main")'></i>
                                     <div id="nav-extra"></div>
                                 </div>
-                                <div class="title"><input type="text" id="name" placeholder="name" value=<?php echo '"' . $_SESSION['current_name'] . '"'; ?>></div>
+                                <div class="title"><input type="text" id="name" placeholder="Project Name" value=<?php echo '"' . $_SESSION['current_name'] . '"'; ?>></div>
                                 <h2>Students</h2>
                                 <hr class="team">
                                 <div class="tag team" onclick="addPeople()">
@@ -1260,12 +1260,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <section id="main">
                             <div class="nav">
                                 <i class='bx bx-undo' onclick="action('goProject')"></i>
-                                <div id="nav-extra"><i class='bx bxs-save'></i>
+                                <div id="nav-extra" onclick="changeName()"><i class='bx bxs-save'></i>
                                     <p>Save <span id="nav-extra-type">Project</span></p>
                                 </div>
                             </div>
                             <div class="title">
-                                <input type="text" placeholder="Project XX" value=<?php echo "'$projectname'"; ?>>
+                                <input type="text" id="project_name" placeholder="Project XX" value=<?php echo "'$projectname'"; ?>>
                             </div>
 
                             <h2>Activities</h2>
@@ -1297,6 +1297,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </body>
                     <?php include_once "scripts.php"; ?>
                     <script>
+                        function changeName(){
+                            var project_name = document.getElementById("project_name").value;
+                            fetchNispera({
+                                name: "action",
+                                value: "editProjectName"
+                            }, {
+                                name: "name",
+                                value: project_name
+                            }).then(response => {
+                                if(response == "true"){
+                                    action('goProject');
+                                    showStatus(true, "Project name changed");
+                                }else{
+                                    showStatus(false, response);
+                                }
+                            });
+                        }
+
                         function goActivity(id) {
                             fetchNispera({
                                 name: "action",
@@ -1327,6 +1345,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     </html>
                 <?php
+                }
+                break;
+            case "editProjectName":
+                if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+                    $name = $data['name'];
+                    //Si name no es vacio
+                    if ($name != "") {
+                        //Revisamos que no hay ningun proyecto que se llame igual
+                        $result = $conn->query("SELECT COUNT(*) AS count FROM projects WHERE name = '$name'");
+                        $row = $result->fetch_assoc();
+                        $count = $row['count'];
+                        if ($count == 0) {
+                            //Actualizamos el nombre del proyecto
+                            $conn->query("UPDATE projects SET name = '$name' WHERE id = '{$_SESSION['current_project']}'");
+                            echo "true";
+                        } else {
+                            echo "Project name already exists";
+                        }
+                    } else {
+                        echo "Empty project name";
+                    }
                 }
                 break;
             case "deleteProject":
@@ -2203,7 +2242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $imagePath = "assets/skills/color";
                         ?>
                         <div class="skill-icon">
-                            <div class="icon-background" onclick="changeIcon('show')"><img src=<?php echo "\"$imagePath/Adaptability.svg\"" ?> alt="skill-choose-icon"></div>
+                            <div class="icon-background" onclick="changeIcon('show')"><img src=<?php echo "\"$imagePath/Logic.svg\"" ?> alt="skill-choose-icon"></div>
                             <input type="text" placeholder="Skill Name" id="skill-name">
                         </div>
                         <div class="choose-icon" id="choose-icon">
@@ -2218,8 +2257,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     $imageUrl = $domain . $imagePath . "/" . $file;
                                     $filename = explode(".", $file)[0];
                                     if ($filename) {
-                                        echo "<label onclick='changeIcon(\"$imageUrl\")'><input type='radio' name='skill-image' value='$file'><img src='$imageUrl' alt='$filename'></label>";
-                                    }
+                                        if ($file == "Logic.svg") {
+                                            echo "<label onclick='changeIcon(\"$imageUrl\")'><input type='radio' name='skill-image' value='$file' checked><img src='$imageUrl' alt='$filename'></label>";
+                                        } else {
+                                            echo "<label onclick='changeIcon(\"$imageUrl\")'><input type='radio' name='skill-image' value='$file'><img src='$imageUrl' alt='$filename'></label>";
+                                        }                                    }
                                 }
                                 ?>
                             </div>
@@ -2253,12 +2295,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }, {
                             name: "image",
                             value: image
+                        }).then(response => {
+                                <?php if (isset($data['create'])) { ?>
+                                    action("createProject");
+                                <?php } else { ?>
+                                    action("goSkills");
+                                <?php } ?>
                         });
-                        <?php if (isset($data['create'])) { ?>
-                            action("createProject");
-                        <?php } else { ?>
-                            action("goSkills");
-                        <?php } ?>
                     }
 
                     var skillRange = document.getElementById('skill-range');
@@ -2549,7 +2592,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                                 <div class="title"><input id="name" type="text" placeholder="Activity name"></div>
                                 <div class="edit-desc">
-                                    <textarea id="description" placeholder="Introduce this activity description..."></textarea>
+                                    <textarea id="description" placeholder="Enter the description for this activity..."></textarea>
                                 </div>
                                 <h2>Skills</h2>
                                 <hr class="skill">
@@ -2971,7 +3014,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     $path = "assets/skills/black/";
                                     //Imprimimos la skill
                                 ?>
-                                    <div class="percent_tag skill ">
+                                    <div class="percent_tag">
+                                        <div class="percent-filler" percent="<?php echo "$percentage"; ?>"></div>
                                         <div><img src=<?php echo "'$domain$path$src'"; ?> alt="Skill_icon">
                                             <p><?php echo "$name"; ?></p>
                                         </div>
@@ -3088,6 +3132,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 ?>
                                                         </div>
                             </section>
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function() {
+                                    let percentFillers = document.querySelectorAll(".percent-filler");
+                                    percentFillers.forEach(function(percentFiller) {
+                                        let percent = percentFiller.getAttribute("percent");
+                                        percentFiller.style.width = percent + "%";
+                                        let percentageDisplay = percentFiller.closest(".percent_tag").querySelector(".percentage-display");
+                                        percentageDisplay.innerText = percent + "%";
+                                    });
+                                });
+                            </script>
                             <script src="scroll.js"></script>
                             <script src="teams.js"></script>
                         </body>

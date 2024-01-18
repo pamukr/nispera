@@ -90,10 +90,11 @@
             name: "new",
             value: newPass
         }).then(response => {
+            editProfile();
             if (response == "true") {
-                showStatus(true, "Contraseña cambiada correctamente");
+                showStatus(true, "Password changed");
             } else {
-                showStatus(false, "Contraseña incorrecta");
+                showStatus(false, "Incorrect password");
             }
         });
     }
