@@ -54,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php
     }
 
-
     function maxMark($idprojecte)
     {
         global $conn;
@@ -81,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             //Calculamos la nota de la skill
             $project_mark += $skill_mark * $project_skill_percentage / 100;
         }
-        echo $project_mark;
+        return $project_mark;
     }
 
 
@@ -120,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $project_mark += $skill_mark * $project_skill_percentage / 100;
         }
 
-        echo $project_mark;
+        return $project_mark;
     }
 
 
@@ -1166,7 +1165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div id="max-grades-display"></div>
                                 </div>
                                 <div class="title">
-                                    <p><span id="your-grades"><?php studentMark("{$_SESSION['id']}", "{$_SESSION['current_project']}"); ?></span> / <span id="max-grades"><?php maxMark("{$_SESSION['current_project']}"); ?></span></p>
+                                    <p><span id="your-grades"><?php echo studentMark("{$_SESSION['id']}", "{$_SESSION['current_project']}"); ?></span> / <span id="max-grades"><?php echo maxMark("{$_SESSION['current_project']}"); ?></span></p>
                                 </div>
 
                                 <h2>Ranking</h2>
@@ -3550,24 +3549,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </head>
 
                         <body>
-                            <button onclick="action('goTeams')">back</button>
-                            <h1>Students without team</h1>
                             <?php
-                            //Obtenemos los miembros del proyecto que no están en ningun team de la actividad current_activity y que sean students
-                            $result = $conn->query("SELECT id, name, surname FROM users WHERE id IN (SELECT user_id FROM project_users WHERE project_id = '{$_SESSION['current_project']}') AND id NOT IN (SELECT user_id FROM teammembers WHERE team_id IN (SELECT id FROM teams WHERE activity_id = '{$_SESSION['current_activity']}')) AND role = 'student'");
-                            //Recorremos los miembros
-                            while ($row = $result->fetch_assoc()) {
-                                $id = $row['id'];
-                                $name = $row['name'];
-                                $surname = $row['surname'];
-                                //Imprimimos el miembro
-                                echo "<div onclick='addtoTeam(\"$teamid\",\"$id\")'>";
-                                echo "<img height='50px' width='50px' src='" . obtainImage($id) . "' alt=''>";
-                                echo "<p>$name $surname</p>";
-                                echo "</div>";
-                            }
+                            //Cargamos el header
+                            $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                            $row = $result->fetch_assoc();
+                            uploadHeader($_SESSION['id'], $row['name'], $row['surname'], $row['user'], $row['email'])
                             ?>
-
+                            <section id="main">
+                                <div class="nav">
+                                    <i class='bx bx-undo' onclick="action('goTeams')"></i>
+                                    <div id="nav-extra"></div>
+                                </div>
+                                <h2>Students without team</h2>
+                                <hr class="user">
+                                <?php
+                                //Obtenemos los miembros del proyecto que no están en ningun team de la actividad current_activity y que sean students
+                                $result = $conn->query("SELECT id, name, surname FROM users WHERE id IN (SELECT user_id FROM project_users WHERE project_id = '{$_SESSION['current_project']}') AND id NOT IN (SELECT user_id FROM teammembers WHERE team_id IN (SELECT id FROM teams WHERE activity_id = '{$_SESSION['current_activity']}')) AND role = 'student'");
+                                //Recorremos los miembros
+                                while ($row = $result->fetch_assoc()) {
+                                    $id = $row['id'];
+                                    $name = $row['name'];
+                                    $surname = $row['surname'];
+                                    //Imprimimos el miembro
+                                ?>
+                                    <div class="add-people-table user-li" onmouseover="this.style.filter='brightness(80%)'" onmouseout="this.style.filter='brightness(100%)'" style="cursor:pointer;" <?php echo "onclick='addtoTeam(\"$teamid\",\"$id\")'" ?>>
+                                        <div>
+                                            <img src=<?php $img = obtainImage($id);
+                                                        echo "'$img'"; ?> alt="user-image">
+                                            <p><?php echo "$name $surname" ?></p>
+                                        </div>
+                                    </div>
+                                <?php
+                                }
+                                ?>
+                            </section>
                         </body>
                         <?php include_once "scripts.php"; ?>
                         <script>
@@ -3695,11 +3710,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Hola</title>
+                    <title>Overall</title>
+                    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+                    <link rel="stylesheet" href="assets/style/style.css" media="print" onload="this.onload=null;this.media='all'">
+                    <link rel="stylesheet" href="assets/style/style.css" />
+                    <link rel="preload" href="assets/style/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+                    <noscript>
+                        <link rel="stylesheet" href="assets/style/style.css">
+                    </noscript>
                 </head>
 
                 <body>
-                    uwu
+                    <?php
+                    //Cargamos el header
+                    $result = $conn->query("SELECT name, surname, email, user FROM users WHERE id = '$_SESSION[id]'");
+                    $row = $result->fetch_assoc();
+                    $name = $row['name'];
+                    $surname = $row['surname'];
+                    $email = $row['email'];
+                    $username = $row['user'];
+                    uploadHeader($_SESSION['id'], $name, $surname, $username, $email);
+                    ?>
+                    <section id="main">
+                        <div class="nav">
+                            <i class='bx bx-undo' onclick="action('main')"></i>
+                            <div id="nav-extra"></div>
+                        </div>
+
+                        <div class="title">
+                            <h1>Overall</h1>
+                        </div>
+
+                        <h2>Ended Projects</h2>
+                        <hr class="grade">
+                        <?php
+                        //Recorremos los proyectos del usuario
+                        $result = $conn->query("SELECT id, name FROM projects WHERE id IN (SELECT project_id FROM project_users WHERE user_id = '$_SESSION[id]')");
+                        while ($row = $result->fetch_assoc()) {
+                            $id = $row['id'];
+                            $name = $row['name'];
+                            //Obtenemos la nota máxima del proyecto
+                            if (maxMark($id) == 10) {
+                                //Nos aseguramos de que no hayan actividades open
+                                $result2 = $conn->query("SELECT COUNT(*) AS count FROM activities WHERE project_id = '$id' AND status = 'open'");
+                                $row2 = $result2->fetch_assoc();
+                                $count = $row2['count'];
+                                //Obtenemos el id del usuario actual
+                                if ($count == 0) {
+                                    //Imprimimos el proyecto
+                        ?>
+                                    <div class="tag grade">
+                                        <p><?php echo "$name"; ?></p>
+                                        <p class="grade-text"><?php echo studentMark($_SESSION['id'], $id); ?></p>
+                                    </div>
+                        <?php
+                                }
+                            }
+                        }
+                        ?>
+                    </section>
                 </body>
 
                 </html>
